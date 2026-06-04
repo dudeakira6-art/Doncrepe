@@ -131,7 +131,7 @@ La guia de uso de Git para este proyecto esta en:
 
 Documento Word para entregar:
 
-`docs/Uso_Git_DonCrepePOS_Actualizado.docx`
+`docs/Uso_Git_DonCrepePOS_Estilo_Ejemplo.docx`
 
 Scripts incluidos:
 

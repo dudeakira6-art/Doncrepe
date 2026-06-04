@@ -8,6 +8,12 @@ Repositorio del proyecto:
 https://github.com/dudeakira6-art/Doncrepe.git
 ```
 
+Documento Word de evidencia con formato similar al ejemplo:
+
+```bat
+docs/Uso_Git_DonCrepePOS_Estilo_Ejemplo.docx
+```
+
 Rama principal:
 
 ```bat
