@@ -1,0 +1,28 @@
+# Build outputs
+/build/
+/dist/
+/target/
+*.class
+/dist/*.jar
+
+# NetBeans local/private files
+/nbproject/private/
+
+# Generated reports
+/reportes/
+
+# Logs and runtime files
+*.log
+hs_err_pid*
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp
+*.bak
+
+# Keep source assets and docs
+!src/resources/img/
+!database/
+!docs/
