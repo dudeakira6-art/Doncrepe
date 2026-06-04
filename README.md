@@ -121,9 +121,17 @@ Tambien puede ejecutar `test/tdd/PruebasTDD.java` desde NetBeans.
 
 ## Git
 
+Repositorio en GitHub:
+
+`https://github.com/dudeakira6-art/Doncrepe.git`
+
 La guia de uso de Git para este proyecto esta en:
 
 `docs/GIT.md`
+
+Documento Word para entregar:
+
+`docs/Uso_Git_DonCrepePOS_Actualizado.docx`
 
 Scripts incluidos:
 
