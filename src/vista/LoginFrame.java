@@ -14,6 +14,8 @@ import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.RenderingHints;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.SQLException;
@@ -32,17 +34,17 @@ import vista.componentes.Recursos;
 
 public class LoginFrame extends JFrame {
     private final PromptTextField txtUsuario = new PromptTextField("Usuario");
-    private final PromptPasswordField txtPassword = new PromptPasswordField("Contrasena");
+    private final PromptPasswordField txtPassword = new PromptPasswordField("Contraseña");
     private final LoginController controller = new LoginController();
     private final JButton btnVerPassword = new JButton();
     private char echoPassword;
     private boolean passwordVisible;
 
     public LoginFrame() {
-        setTitle("Don Crepe - Login");
+        setTitle("Don Crepé - Login");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(950, 620);
-        setMinimumSize(new Dimension(860, 560));
+        setSize(1080, 640);
+        setMinimumSize(new Dimension(980, 580));
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
         getContentPane().setBackground(Color.WHITE);
@@ -61,7 +63,7 @@ public class LoginFrame extends JFrame {
 
         JPanel formulario = new JPanel(new GridBagLayout());
         formulario.setOpaque(false);
-        formulario.setPreferredSize(new Dimension(470, 500));
+        formulario.setPreferredSize(new Dimension(590, 510));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -76,7 +78,7 @@ public class LoginFrame extends JFrame {
         gbc.insets = new Insets(0, 0, 42, 0);
         formulario.add(bienvenido, gbc);
 
-        JLabel titulo = new JLabel("INICIAR SESION");
+        JLabel titulo = new JLabel("INICIAR SESIÓN");
         titulo.setHorizontalAlignment(SwingConstants.LEFT);
         titulo.setForeground(Color.BLACK);
         titulo.setFont(new Font("Segoe UI", Font.PLAIN, 24));
@@ -86,7 +88,7 @@ public class LoginFrame extends JFrame {
 
         txtUsuario.setFont(new Font("Segoe UI", Font.PLAIN, 18));
         CampoLogin campoUsuario = new CampoLogin(txtUsuario, Recursos.icono("icon_userpink.png", 34), null);
-        campoUsuario.setPreferredSize(new Dimension(430, 64));
+        campoUsuario.setPreferredSize(new Dimension(560, 68));
         gbc.gridy = 2;
         gbc.insets = new Insets(0, 0, 48, 0);
         formulario.add(campoUsuario, gbc);
@@ -95,7 +97,7 @@ public class LoginFrame extends JFrame {
         echoPassword = txtPassword.getEchoChar();
         configurarBotonPassword();
         CampoLogin campoPassword = new CampoLogin(txtPassword, null, btnVerPassword);
-        campoPassword.setPreferredSize(new Dimension(430, 64));
+        campoPassword.setPreferredSize(new Dimension(560, 68));
         gbc.gridy = 3;
         gbc.insets = new Insets(0, 0, 88, 0);
         formulario.add(campoPassword, gbc);
@@ -163,21 +165,21 @@ public class LoginFrame extends JFrame {
         String icono = passwordVisible ? "icon_eyepink.png" : "Icon_closedeyepink.png";
         ImageIcon imagen = Recursos.icono(icono, 34);
         btnVerPassword.setIcon(imagen);
-        btnVerPassword.setToolTipText(passwordVisible ? "Ocultar contrasena" : "Mostrar contrasena");
+        btnVerPassword.setToolTipText(passwordVisible ? "Ocultar contraseña" : "Mostrar contraseña");
     }
 
     private void iniciarSesion() {
         String usuario = txtUsuario.getText().trim();
         String password = new String(txtPassword.getPassword());
         if (usuario.isEmpty() || password.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Ingrese usuario y contrasena.");
+            JOptionPane.showMessageDialog(this, "Ingrese usuario y contraseña.");
             return;
         }
 
         try {
             Usuario autenticado = controller.autenticar(usuario, password);
             if (autenticado == null) {
-                JOptionPane.showMessageDialog(this, "Credenciales invalidas.");
+                JOptionPane.showMessageDialog(this, "Credenciales inválidas.");
                 return;
             }
             new MainFrame(autenticado).setVisible(true);
@@ -254,6 +256,7 @@ public class LoginFrame extends JFrame {
 
         PromptTextField(String prompt) {
             this.prompt = prompt;
+            instalarRepintadoDeFoco(this);
         }
 
         @Override
@@ -270,6 +273,7 @@ public class LoginFrame extends JFrame {
 
         PromptPasswordField(String prompt) {
             this.prompt = prompt;
+            instalarRepintadoDeFoco(this);
         }
 
         @Override
@@ -289,5 +293,19 @@ public class LoginFrame extends JFrame {
         Insets insets = campo.getInsets();
         g2.drawString(prompt, insets.left, campo.getHeight() / 2 + g2.getFontMetrics().getAscent() / 2 - 3);
         g2.dispose();
+    }
+
+    private static void instalarRepintadoDeFoco(final JTextField campo) {
+        campo.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                campo.repaint();
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                campo.repaint();
+            }
+        });
     }
 }

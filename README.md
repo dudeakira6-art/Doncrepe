@@ -2,7 +2,7 @@
 
 Sistema de ventas de escritorio para una tienda de crepes, desarrollado en Java Swing para abrirse desde NetBeans.
 
-## Como abrir en NetBeans
+## Cómo abrir en NetBeans
 
 1. Abra NetBeans.
 2. Seleccione `File > Open Project`.
@@ -20,15 +20,15 @@ Sistema de ventas de escritorio para una tienda de crepes, desarrollado en Java 
 Usuarios demo:
 
 - Gerente/Jefe: `admin`
-- Contrasena: `admin`
+- Contraseña: `admin`
 - Empleado: `empleado`
-- Contrasena: `empleado`
+- Contraseña: `empleado`
 
-Las contrasenas iniciales del script SQL se guardan con hash SHA-256 usando el formato `usuario:contrasena`.
+Las contraseñas iniciales del script SQL se guardan con hash SHA-256 usando el formato `usuario:contraseña`.
 
 ## Driver MySQL
 
-El codigo usa JDBC con `com.mysql.cj.jdbc.Driver`.
+El código usa JDBC con `com.mysql.cj.jdbc.Driver`.
 
 En NetBeans agregue MySQL Connector/J al proyecto:
 
@@ -37,13 +37,13 @@ En NetBeans agregue MySQL Connector/J al proyecto:
 3. `Add JAR/Folder`.
 4. Seleccione el archivo `mysql-connector-j-*.jar`.
 
-Si usa XAMPP o MySQL local, normalmente la configuracion por defecto funciona:
+Si usa XAMPP o MySQL local, normalmente la configuración por defecto funciona:
 
 - Host: `localhost`
 - Puerto: `3306`
 - Base de datos: `don_crepe_db`
 - Usuario: `root`
-- Contrasena: vacia
+- Contraseña: vacía
 
 Para cambiar estos valores edite:
 
@@ -52,14 +52,14 @@ Para cambiar estos valores edite:
 ## Funcionalidades
 
 - Login con MySQL.
-- Dashboard con ventas del dia, caja, pedidos y productos.
+- Dashboard con ventas del día, caja, pedidos y productos.
 - Gestion visual de mesas con estado libre/ocupado.
 - Catalogo de productos en tarjetas.
 - Agregar, editar y eliminar productos.
 - Crear pedidos con productos y cantidades.
 - Registro automatico en caja.
 - Historial de caja por fecha.
-- Cerrar sesion.
+- Cerrar sesión.
 
 ## Arquitectura
 
