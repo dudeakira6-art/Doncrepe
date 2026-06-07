@@ -1,19 +1,24 @@
 package vista;
 
 import controlador.LoginController;
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.RenderingHints;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Insets;
+import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.SQLException;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -23,88 +28,142 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import modelo.Usuario;
-import vista.componentes.NeonIcon;
 import vista.componentes.Recursos;
-import vista.componentes.RoundedPanel;
 
 public class LoginFrame extends JFrame {
-    private final JTextField txtUsuario = new JTextField();
-    private final JPasswordField txtPassword = new JPasswordField();
+    private final PromptTextField txtUsuario = new PromptTextField("Usuario");
+    private final PromptPasswordField txtPassword = new PromptPasswordField("Contrasena");
     private final LoginController controller = new LoginController();
+    private final JButton btnVerPassword = new JButton();
+    private char echoPassword;
+    private boolean passwordVisible;
 
     public LoginFrame() {
         setTitle("Don Crepe - Login");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(900, 520);
+        setSize(950, 620);
+        setMinimumSize(new Dimension(860, 560));
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
+        getContentPane().setBackground(Color.WHITE);
 
-        JPanel izquierda = new GradientPanel();
-        izquierda.setPreferredSize(new Dimension(450, 0));
+        JPanel izquierda = new LoginDecorPanel();
+        izquierda.setPreferredSize(new Dimension(430, 0));
         izquierda.setLayout(new GridBagLayout());
-        JLabel logo = new JLabel(Recursos.logo(330, 330));
+
+        JLabel logo = new JLabel(Recursos.logo(300, 300));
         logo.setHorizontalAlignment(SwingConstants.CENTER);
         izquierda.add(logo);
 
         JPanel derecha = new JPanel(new GridBagLayout());
-        derecha.setBackground(Estilos.FONDO);
+        derecha.setBackground(Color.WHITE);
+        derecha.setBorder(BorderFactory.createEmptyBorder(34, 42, 34, 52));
+
+        JPanel formulario = new JPanel(new GridBagLayout());
+        formulario.setOpaque(false);
+        formulario.setPreferredSize(new Dimension(470, 500));
+
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 12, 8, 12);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridx = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+
+        JLabel bienvenido = new JLabel("¡BIENVENIDO!");
+        bienvenido.setHorizontalAlignment(SwingConstants.CENTER);
+        bienvenido.setForeground(Color.BLACK);
+        bienvenido.setFont(new Font("Segoe UI", Font.BOLD, 24));
         gbc.gridy = 0;
+        gbc.insets = new Insets(0, 0, 42, 0);
+        formulario.add(bienvenido, gbc);
 
-        RoundedPanel tarjeta = new RoundedPanel(28, Estilos.BLANCO, true);
-        tarjeta.setLayout(new GridBagLayout());
-        tarjeta.setBorder(BorderFactory.createEmptyBorder(24, 28, 24, 28));
-        GridBagConstraints form = new GridBagConstraints();
-        form.gridx = 0;
-        form.fill = GridBagConstraints.HORIZONTAL;
-        form.insets = new Insets(7, 5, 7, 5);
+        JLabel titulo = new JLabel("INICIAR SESION");
+        titulo.setHorizontalAlignment(SwingConstants.LEFT);
+        titulo.setForeground(Color.BLACK);
+        titulo.setFont(new Font("Segoe UI", Font.PLAIN, 24));
+        gbc.gridy = 1;
+        gbc.insets = new Insets(0, 0, 36, 0);
+        formulario.add(titulo, gbc);
 
-        JLabel bienvenido = new JLabel("Bienvenido");
-        bienvenido.setForeground(Estilos.TEXTO);
-        bienvenido.setFont(new Font("Segoe UI", Font.BOLD, 30));
-        tarjeta.add(bienvenido, form);
+        txtUsuario.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+        CampoLogin campoUsuario = new CampoLogin(txtUsuario, Recursos.icono("icon_userpink.png", 34), null);
+        campoUsuario.setPreferredSize(new Dimension(430, 64));
+        gbc.gridy = 2;
+        gbc.insets = new Insets(0, 0, 48, 0);
+        formulario.add(campoUsuario, gbc);
 
-        form.gridy = 1;
-        JLabel subtitulo = new JLabel("Inicia sesion para gestionar ventas");
-        subtitulo.setForeground(Estilos.TEXTO_SUAVE);
-        subtitulo.setFont(Estilos.fuenteNormal());
-        tarjeta.add(subtitulo, form);
+        txtPassword.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+        echoPassword = txtPassword.getEchoChar();
+        configurarBotonPassword();
+        CampoLogin campoPassword = new CampoLogin(txtPassword, null, btnVerPassword);
+        campoPassword.setPreferredSize(new Dimension(430, 64));
+        gbc.gridy = 3;
+        gbc.insets = new Insets(0, 0, 88, 0);
+        formulario.add(campoPassword, gbc);
 
-        form.gridy = 2;
-        txtUsuario.setPreferredSize(new Dimension(250, 34));
-        txtUsuario.setBorder(BorderFactory.createTitledBorder(Estilos.bordeRosa(), "Usuario"));
-        txtUsuario.setFont(Estilos.fuenteNormal());
-        txtUsuario.setToolTipText("Usuario");
-        tarjeta.add(txtUsuario, form);
-
-        form.gridy = 3;
-        txtPassword.setPreferredSize(new Dimension(250, 34));
-        txtPassword.setBorder(BorderFactory.createTitledBorder(Estilos.bordeRosa(), "Contrasena"));
-        txtPassword.setFont(Estilos.fuenteNormal());
-        txtPassword.setToolTipText("Contrasena");
-        tarjeta.add(txtPassword, form);
-
-        form.gridy = 4;
-        JButton ingresar = Estilos.botonPrimario("Ingresar");
-        ingresar.setIcon(new NeonIcon(NeonIcon.USER, 18, Color.WHITE));
+        JButton ingresar = crearBotonIngresar();
         ingresar.addActionListener(e -> iniciarSesion());
-        tarjeta.add(ingresar, form);
+        gbc.gridy = 4;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(0, 0, 0, 0);
+        formulario.add(ingresar, gbc);
 
-        form.gridy = 5;
-        JLabel ayuda = new JLabel("Usuario demo: admin / admin");
-        ayuda.setHorizontalAlignment(SwingConstants.CENTER);
-        ayuda.setForeground(Estilos.TEXTO_SUAVE);
-        ayuda.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        tarjeta.add(ayuda, form);
-
-        derecha.add(tarjeta, gbc);
-
+        derecha.add(formulario);
         add(izquierda, BorderLayout.WEST);
         add(derecha, BorderLayout.CENTER);
         getRootPane().setDefaultButton(ingresar);
+    }
+
+    private JButton crearBotonIngresar() {
+        ImageIcon icono = Recursos.imagen("boton_ingresar.png", 160, 70);
+        JButton boton = new JButton(icono);
+        boton.setText(icono == null ? "INGRESAR" : "");
+        boton.setForeground(Estilos.ROSA_FUERTE);
+        boton.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        boton.setPreferredSize(new Dimension(170, 76));
+        boton.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        boton.setContentAreaFilled(false);
+        boton.setFocusPainted(false);
+        boton.setOpaque(false);
+        boton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        boton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                boton.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(new Color(255, 45, 154), 1, true),
+                        BorderFactory.createEmptyBorder(7, 7, 9, 9)));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                boton.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+            }
+        });
+        return boton;
+    }
+
+    private void configurarBotonPassword() {
+        btnVerPassword.setPreferredSize(new Dimension(46, 46));
+        btnVerPassword.setBorder(BorderFactory.createEmptyBorder());
+        btnVerPassword.setContentAreaFilled(false);
+        btnVerPassword.setFocusPainted(false);
+        btnVerPassword.setOpaque(false);
+        btnVerPassword.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btnVerPassword.addActionListener(e -> alternarPassword());
+        actualizarIconoPassword();
+    }
+
+    private void alternarPassword() {
+        passwordVisible = !passwordVisible;
+        txtPassword.setEchoChar(passwordVisible ? (char) 0 : echoPassword);
+        actualizarIconoPassword();
+    }
+
+    private void actualizarIconoPassword() {
+        String icono = passwordVisible ? "icon_eyepink.png" : "Icon_closedeyepink.png";
+        ImageIcon imagen = Recursos.icono(icono, 34);
+        btnVerPassword.setIcon(imagen);
+        btnVerPassword.setToolTipText(passwordVisible ? "Ocultar contrasena" : "Mostrar contrasena");
     }
 
     private void iniciarSesion() {
@@ -128,8 +187,8 @@ public class LoginFrame extends JFrame {
         }
     }
 
-    private static class GradientPanel extends JPanel {
-        GradientPanel() {
+    private static class LoginDecorPanel extends JPanel {
+        LoginDecorPanel() {
             setOpaque(false);
         }
 
@@ -138,20 +197,97 @@ public class LoginFrame extends JFrame {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            javax.swing.ImageIcon fondo = Recursos.imagen("Fondo de Login.png", getWidth(), getHeight());
+            ImageIcon fondo = Recursos.imagen("Fondo de Login.png", Math.max(1, getWidth()), Math.max(1, getHeight()));
             if (fondo != null) {
                 g2.drawImage(fondo.getImage(), 0, 0, getWidth(), getHeight(), this);
             } else {
-                java.awt.GradientPaint gp = new java.awt.GradientPaint(0, 0, Estilos.ROSA_CLARO, getWidth(), getHeight(), new Color(255, 105, 203));
-                g2.setPaint(gp);
+                g2.setColor(Estilos.ROSA_CLARO);
                 g2.fillRect(0, 0, getWidth(), getHeight());
             }
-            javax.swing.ImageIcon adorno = Recursos.imagen("Adorno de Inicio.png", 170, 100);
+            ImageIcon adorno = Recursos.imagen("Adorno de Inicio.png", 210, 124);
             if (adorno != null) {
                 Image img = adorno.getImage();
-                g2.drawImage(img, 12, getHeight() - 116, 170, 100, this);
+                g2.drawImage(img, 18, getHeight() - 146, 210, 124, this);
             }
             g2.dispose();
         }
+    }
+
+    private static class CampoLogin extends JPanel {
+        CampoLogin(JTextField campo, ImageIcon iconoIzquierda, JButton botonDerecha) {
+            setOpaque(false);
+            setLayout(new BorderLayout(12, 0));
+            setBorder(BorderFactory.createEmptyBorder(4, 12, 4, 12));
+
+            campo.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            campo.setOpaque(false);
+            campo.setForeground(Estilos.TEXTO);
+            campo.setCaretColor(Estilos.ROSA_FUERTE);
+
+            add(campo, BorderLayout.CENTER);
+            if (iconoIzquierda != null) {
+                JLabel icono = new JLabel(iconoIzquierda);
+                icono.setPreferredSize(new Dimension(44, 44));
+                icono.setHorizontalAlignment(SwingConstants.CENTER);
+                add(icono, BorderLayout.EAST);
+            } else if (botonDerecha != null) {
+                add(botonDerecha, BorderLayout.EAST);
+            }
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(Color.WHITE);
+            g2.fillRoundRect(1, 1, getWidth() - 3, getHeight() - 3, 18, 18);
+            g2.setColor(new Color(255, 0, 129));
+            g2.setStroke(new BasicStroke(1.6f));
+            g2.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, 18, 18);
+            g2.dispose();
+            super.paintComponent(g);
+        }
+    }
+
+    private static class PromptTextField extends JTextField {
+        private final String prompt;
+
+        PromptTextField(String prompt) {
+            this.prompt = prompt;
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            if (getText().isEmpty() && !isFocusOwner()) {
+                pintarPrompt(g, prompt, this);
+            }
+        }
+    }
+
+    private static class PromptPasswordField extends JPasswordField {
+        private final String prompt;
+
+        PromptPasswordField(String prompt) {
+            this.prompt = prompt;
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            if (getPassword().length == 0 && !isFocusOwner()) {
+                pintarPrompt(g, prompt, this);
+            }
+        }
+    }
+
+    private static void pintarPrompt(Graphics g, String prompt, JTextField campo) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2.setColor(new Color(135, 135, 135));
+        g2.setFont(campo.getFont());
+        Insets insets = campo.getInsets();
+        g2.drawString(prompt, insets.left, campo.getHeight() / 2 + g2.getFontMetrics().getAscent() / 2 - 3);
+        g2.dispose();
     }
 }

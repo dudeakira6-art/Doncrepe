@@ -17,10 +17,14 @@ Sistema de ventas de escritorio para una tienda de crepes, desarrollado en Java 
    `database/don_crepe_db.sql`
 3. Esto crea la base de datos `don_crepe_db` con usuario, mesas, productos, pedidos y caja inicial.
 
-Usuario demo:
+Usuarios demo:
 
-- Usuario: `admin`
+- Gerente/Jefe: `admin`
 - Contrasena: `admin`
+- Empleado: `empleado`
+- Contrasena: `empleado`
+
+Las contrasenas iniciales del script SQL se guardan con hash SHA-256 usando el formato `usuario:contrasena`.
 
 ## Driver MySQL
 

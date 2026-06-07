@@ -67,7 +67,8 @@ CREATE TABLE caja (
 );
 
 INSERT INTO usuarios (nombre, usuario, password, rol) VALUES
-('Milo Perez', 'admin', 'admin', 'Empleado');
+('Milo Perez', 'admin', '8da193366e1554c08b2870c50f737b9587c3372b656151c4a96028af26f51334', 'Gerente'),
+('Empleado Demo', 'empleado', 'dca336b52bdfda2695aa74dc0c9637532f08855804c493fe05d129acabc09ee2', 'Empleado');
 
 INSERT INTO mesas (numero, estado) VALUES
 (1, 'OCUPADO'),
