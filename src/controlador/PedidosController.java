@@ -223,6 +223,10 @@ public class PedidosController {
         String numero = (Comprobante.FACTURA.equals(tipo) ? "F001-" : "B001-") + System.currentTimeMillis();
         String archivo = new File(carpetaComprobantes, numero + ".pdf").getPath();
         String nombre = StringUtils.defaultIfBlank(clienteNombre, pedido.getCliente());
+        // Si es boleta simple, dejamos el nombre vacío (no pedir datos de cliente)
+        if (Comprobante.BOLETA_SIMPLE.equals(tipo)) {
+            nombre = "";
+        }
         return new Comprobante(0, pedido.getIdPedido(), tipo, numero, nombre.trim(), StringUtils.trimToEmpty(dni),
                 StringUtils.trimToEmpty(ruc), StringUtils.trimToEmpty(razonSocial), StringUtils.trimToEmpty(direccion),
                 archivo, new java.util.Date());

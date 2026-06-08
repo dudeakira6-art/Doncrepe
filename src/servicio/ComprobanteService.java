@@ -62,8 +62,10 @@ public class ComprobanteService {
             lineas.add("Razón social: " + comprobante.getRazonSocial());
             lineas.add("Dirección: " + comprobante.getDireccion());
         } else {
-            lineas.add("Cliente: " + comprobante.getClienteNombre());
-            if (Comprobante.BOLETA_DNI.equals(comprobante.getTipo())) {
+            if (comprobante.getClienteNombre() != null && !comprobante.getClienteNombre().trim().isEmpty()) {
+                lineas.add("Cliente: " + comprobante.getClienteNombre());
+            }
+            if (Comprobante.BOLETA_DNI.equals(comprobante.getTipo()) && comprobante.getDni() != null && !comprobante.getDni().trim().isEmpty()) {
                 lineas.add("DNI: " + comprobante.getDni());
             }
         }
