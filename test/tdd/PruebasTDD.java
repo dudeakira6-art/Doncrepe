@@ -9,7 +9,9 @@ import java.util.Date;
 import java.util.List;
 import modelo.Caja;
 import modelo.DetallePedido;
+import modelo.Pedido;
 import modelo.Producto;
+import servicio.BoletaService;
 import servicio.CalculadoraPedido;
 import servicio.ReporteCajaExcelService;
 
@@ -26,6 +28,7 @@ public class PruebasTDD {
         pruebas.debeNormalizarClienteYResumirPedidoConGuava();
         pruebas.debeSumarMovimientosDeCaja();
         pruebas.debeExportarCajaConApachePOI();
+        pruebas.debeGenerarBoletaDePedido();
         System.out.println("TDD OK - pruebas ejecutadas: " + pruebas.pruebasEjecutadas);
     }
 
@@ -110,6 +113,21 @@ public class PruebasTDD {
             assertTrue(archivo.exists() && archivo.length() > 0, "Apache POI debe crear el reporte Excel de caja.");
         } catch (Exception ex) {
             throw new AssertionError("No se pudo exportar Excel con Apache POI: " + ex.getMessage());
+        }
+    }
+
+    private void debeGenerarBoletaDePedido() {
+        List<DetallePedido> detalles = new ArrayList<DetallePedido>();
+        detalles.add(new DetallePedido(new Producto(1, "Crepe de Fresa", "Crepe", 12.00, "", true), 2));
+        Pedido pedido = new Pedido(1, "P-TDD", "Cliente TDD", 24.00, "Efectivo", "COMPLETADO", new Date(), 1);
+        File carpeta = new File("build/test/boletas");
+        File archivo = new File(carpeta, "boleta_P-TDD.txt");
+
+        try {
+            new BoletaService().generar(pedido, detalles, carpeta);
+            assertTrue(archivo.exists() && archivo.length() > 0, "La boleta debe generarse como archivo de texto.");
+        } catch (Exception ex) {
+            throw new AssertionError("No se pudo generar la boleta: " + ex.getMessage());
         }
     }
 

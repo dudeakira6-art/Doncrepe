@@ -18,6 +18,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URL;
 import java.sql.SQLException;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -63,7 +64,8 @@ public class LoginFrame extends JFrame {
 
         JPanel formulario = new JPanel(new GridBagLayout());
         formulario.setOpaque(false);
-        formulario.setPreferredSize(new Dimension(590, 510));
+        formulario.setPreferredSize(new Dimension(540, 510));
+        formulario.setMinimumSize(new Dimension(420, 510));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -88,7 +90,8 @@ public class LoginFrame extends JFrame {
 
         txtUsuario.setFont(new Font("Segoe UI", Font.PLAIN, 18));
         CampoLogin campoUsuario = new CampoLogin(txtUsuario, Recursos.icono("icon_userpink.png", 34), null);
-        campoUsuario.setPreferredSize(new Dimension(560, 68));
+        campoUsuario.setPreferredSize(new Dimension(520, 68));
+        campoUsuario.setMinimumSize(new Dimension(420, 68));
         gbc.gridy = 2;
         gbc.insets = new Insets(0, 0, 48, 0);
         formulario.add(campoUsuario, gbc);
@@ -97,7 +100,8 @@ public class LoginFrame extends JFrame {
         echoPassword = txtPassword.getEchoChar();
         configurarBotonPassword();
         CampoLogin campoPassword = new CampoLogin(txtPassword, null, btnVerPassword);
-        campoPassword.setPreferredSize(new Dimension(560, 68));
+        campoPassword.setPreferredSize(new Dimension(520, 68));
+        campoPassword.setMinimumSize(new Dimension(420, 68));
         gbc.gridy = 3;
         gbc.insets = new Insets(0, 0, 88, 0);
         formulario.add(campoPassword, gbc);
@@ -110,19 +114,29 @@ public class LoginFrame extends JFrame {
         gbc.insets = new Insets(0, 0, 0, 0);
         formulario.add(ingresar, gbc);
 
-        derecha.add(formulario);
+        GridBagConstraints derechaGbc = new GridBagConstraints();
+        derechaGbc.gridx = 0;
+        derechaGbc.gridy = 0;
+        derechaGbc.weightx = 1;
+        derechaGbc.fill = GridBagConstraints.HORIZONTAL;
+        derechaGbc.anchor = GridBagConstraints.CENTER;
+        derecha.add(formulario, derechaGbc);
         add(izquierda, BorderLayout.WEST);
         add(derecha, BorderLayout.CENTER);
         getRootPane().setDefaultButton(ingresar);
     }
 
     private JButton crearBotonIngresar() {
-        ImageIcon icono = Recursos.imagen("boton_ingresar.png", 160, 70);
+        ImageIcon icono = imagenProporcional("boton_ingresar.png", 150, 100);
         JButton boton = new JButton(icono);
         boton.setText(icono == null ? "INGRESAR" : "");
         boton.setForeground(Estilos.ROSA_FUERTE);
         boton.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        boton.setPreferredSize(new Dimension(170, 76));
+        Dimension tamano = icono == null
+                ? new Dimension(170, 76)
+                : new Dimension(icono.getIconWidth() + 20, icono.getIconHeight() + 16);
+        boton.setPreferredSize(tamano);
+        boton.setMinimumSize(tamano);
         boton.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         boton.setContentAreaFilled(false);
         boton.setFocusPainted(false);
@@ -142,6 +156,24 @@ public class LoginFrame extends JFrame {
             }
         });
         return boton;
+    }
+
+    private ImageIcon imagenProporcional(String nombre, int anchoMaximo, int altoMaximo) {
+        URL url = LoginFrame.class.getResource("/resources/img/" + nombre);
+        if (url == null) {
+            return null;
+        }
+        ImageIcon original = new ImageIcon(url);
+        int anchoOriginal = original.getIconWidth();
+        int altoOriginal = original.getIconHeight();
+        if (anchoOriginal <= 0 || altoOriginal <= 0) {
+            return null;
+        }
+        double escala = Math.min((double) anchoMaximo / anchoOriginal, (double) altoMaximo / altoOriginal);
+        int ancho = Math.max(1, (int) Math.round(anchoOriginal * escala));
+        int alto = Math.max(1, (int) Math.round(altoOriginal * escala));
+        Image imagen = original.getImage().getScaledInstance(ancho, alto, Image.SCALE_SMOOTH);
+        return new ImageIcon(imagen);
     }
 
     private void configurarBotonPassword() {

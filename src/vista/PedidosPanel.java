@@ -5,6 +5,7 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +34,7 @@ public class PedidosPanel extends JPanel {
     private final Usuario usuario;
     private final Runnable alGuardar;
     private final PedidosController controller = new PedidosController();
-    private final DefaultTableModel model = new DefaultTableModel(new Object[]{"Pedido", "Cliente", "Mesa", "Total", "Metodo de Pago", "Estado"}, 0);
+    private final DefaultTableModel model = new DefaultTableModel(new Object[]{"Pedido", "Cliente", "Mesa", "Total", "Método de Pago", "Estado"}, 0);
     private JTable tablaPedidos;
 
     public PedidosPanel(Usuario usuario, Runnable alGuardar) {
@@ -62,11 +63,15 @@ public class PedidosPanel extends JPanel {
         JButton nuevo = Estilos.botonSecundario("+ Nuevo Pedido");
         nuevo.setIcon(new NeonIcon(NeonIcon.ADD, 18, Estilos.ROSA_NEON));
         nuevo.addActionListener(e -> nuevoPedido());
+        JButton pagar = Estilos.botonSecundario("Proceder con pago");
+        pagar.setIcon(new NeonIcon(NeonIcon.CASH, 18, Estilos.ROSA_NEON));
+        pagar.addActionListener(e -> procederPago());
         JButton eliminar = Estilos.botonSecundario("Eliminar Pedido");
         eliminar.addActionListener(e -> eliminarPedido());
         JPanel acciones = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         acciones.setOpaque(false);
         acciones.add(nuevo);
+        acciones.add(pagar);
         acciones.add(eliminar);
         barra.add(titulo, BorderLayout.WEST);
         barra.add(acciones, BorderLayout.EAST);
@@ -105,7 +110,6 @@ public class PedidosPanel extends JPanel {
                 cmbProducto.addItem(producto);
             }
             JSpinner cantidad = new JSpinner(new SpinnerNumberModel(1, 1, 99, 1));
-            JComboBox<String> metodo = new JComboBox<String>(new String[]{"Efectivo", "Tarjeta", "Yape", "Transferencia"});
             JCheckBox delivery = new JCheckBox("Pedido para Delivery");
             delivery.setOpaque(false);
             delivery.setForeground(Estilos.ROSA_NEON);
@@ -148,8 +152,6 @@ public class PedidosPanel extends JPanel {
             campos.add(cmbProducto);
             campos.add(labelFormulario("Cantidad"));
             campos.add(cantidad);
-            campos.add(labelFormulario("Metodo de pago"));
-            campos.add(metodo);
             campos.add(labelFormulario("Entrega"));
             campos.add(delivery);
             campos.add(agregar);
@@ -171,14 +173,81 @@ public class PedidosPanel extends JPanel {
                 JOptionPane.showMessageDialog(this, "No hay mesas libres disponibles. Marque Delivery o libere una mesa.");
                 return;
             }
-            controller.crearPedido(usuario, delivery.isSelected() ? null : mesa.getMesa(), cliente.getText().trim(), metodo.getSelectedItem().toString(), detalles, delivery.isSelected());
-            JOptionPane.showMessageDialog(this, "Pedido guardado correctamente.");
+            controller.crearPedido(usuario, delivery.isSelected() ? null : mesa.getMesa(), cliente.getText().trim(), "Pendiente", detalles, delivery.isSelected());
+            JOptionPane.showMessageDialog(this, "Pedido creado como pendiente. Proceda con el pago cuando corresponda.");
             cargar();
             if (alGuardar != null) {
                 alGuardar.run();
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "No se pudo crear pedido:\n" + ex.getMessage());
+        }
+    }
+
+    private void procederPago() {
+        int fila = tablaPedidos.getSelectedRow();
+        if (fila < 0) {
+            JOptionPane.showMessageDialog(this, "Seleccione un pedido para pagar.");
+            return;
+        }
+        String codigo = tablaPedidos.getValueAt(fila, 0).toString();
+        String estado = tablaPedidos.getValueAt(fila, 5).toString();
+        if ("COMPLETADO".equalsIgnoreCase(estado)) {
+            JOptionPane.showMessageDialog(this, "El pedido seleccionado ya fue pagado.");
+            return;
+        }
+        try {
+            Pedido pedido = controller.buscarPedido(codigo);
+            List<DetallePedido> detalles = controller.listarDetalles(codigo);
+            JComboBox<String> metodo = new JComboBox<String>(new String[]{"Efectivo", "Tarjeta", "Yape", "Transferencia"});
+
+            DefaultTableModel detalleModel = new DefaultTableModel(new Object[]{"Producto", "Cantidad", "Subtotal"}, 0);
+            for (DetallePedido detalle : detalles) {
+                detalleModel.addRow(new Object[]{
+                    detalle.getProducto().getNombre(),
+                    detalle.getCantidad(),
+                    "S/ " + String.format("%.2f", detalle.getSubtotal())
+                });
+            }
+            JTable tablaDetalle = new JTable(detalleModel);
+            Estilos.estilizarTabla(tablaDetalle);
+
+            RoundedPanel panel = new RoundedPanel(18, Estilos.BLANCO, false);
+            panel.setLayout(new BorderLayout(8, 8));
+            panel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+
+            JPanel resumen = new JPanel(new GridLayout(0, 2, 8, 8));
+            resumen.setOpaque(false);
+            resumen.add(labelFormulario("Pedido"));
+            resumen.add(new JLabel(pedido.getCodigo()));
+            resumen.add(labelFormulario("Cliente"));
+            resumen.add(new JLabel(pedido.getCliente()));
+            resumen.add(labelFormulario("Atención"));
+            resumen.add(new JLabel(pedido.getMesaNumero() == 0 ? "Delivery" : "Mesa " + pedido.getMesaNumero()));
+            resumen.add(labelFormulario("Total"));
+            JLabel total = new JLabel("S/ " + String.format("%.2f", pedido.getTotal()));
+            total.setFont(new Font("Segoe UI", Font.BOLD, 15));
+            total.setForeground(Estilos.ROSA_NEON);
+            resumen.add(total);
+            resumen.add(labelFormulario("Método de pago"));
+            resumen.add(metodo);
+
+            panel.add(resumen, BorderLayout.NORTH);
+            panel.add(new JScrollPane(tablaDetalle), BorderLayout.CENTER);
+
+            int ok = JOptionPane.showConfirmDialog(this, panel, "Proceder con pago", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+            if (ok != JOptionPane.OK_OPTION) {
+                return;
+            }
+
+            File boleta = controller.procesarPagoYGenerarBoleta(codigo, metodo.getSelectedItem().toString(), new File("reportes/boletas"));
+            JOptionPane.showMessageDialog(this, "Pago registrado correctamente.\nBoleta generada en:\n" + boleta.getAbsolutePath());
+            cargar();
+            if (alGuardar != null) {
+                alGuardar.run();
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "No se pudo procesar el pago:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 

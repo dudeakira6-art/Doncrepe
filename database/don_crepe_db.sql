@@ -72,9 +72,9 @@ INSERT INTO usuarios (nombre, usuario, password, rol) VALUES
 
 INSERT INTO mesas (numero, estado) VALUES
 (1, 'OCUPADO'),
-(2, 'LIBRE'),
+(2, 'OCUPADO'),
 (3, 'LIBRE'),
-(4, 'OCUPADO'),
+(4, 'LIBRE'),
 (5, 'OCUPADO'),
 (6, 'OCUPADO');
 
@@ -96,7 +96,7 @@ INSERT INTO productos (nombre, categoria, precio, imagen, activo) VALUES
 ('Coca Cola 1L', 'Bebida', 6.00, 'Coca Cola.png', 1);
 
 INSERT INTO pedidos (codigo, id_usuario, id_mesa, cliente, total, metodo_pago, estado, fecha) VALUES
-('P-058', 1, 2, 'Carlos Alberto', 34.00, 'Efectivo', 'COMPLETADO', NOW()),
+('P-058', 1, 2, 'Carlos Alberto', 34.00, 'Pendiente', 'PENDIENTE', NOW()),
 ('P-059', 1, 4, 'Andrea Ruiz', 20.00, 'Tarjeta', 'COMPLETADO', NOW());
 
 INSERT INTO detalle_pedido (id_pedido, id_producto, cantidad, precio_unitario, subtotal) VALUES
@@ -107,5 +107,4 @@ INSERT INTO detalle_pedido (id_pedido, id_producto, cantidad, precio_unitario, s
 (2, 15, 1, 6.00, 6.00);
 
 INSERT INTO caja (id_pedido, monto, metodo_pago, fecha, tipo_movimiento) VALUES
-(1, 34.00, 'Efectivo', NOW(), 'VENTA'),
 (2, 20.00, 'Tarjeta', NOW(), 'VENTA');

@@ -7,6 +7,8 @@ import dao.IProductoDAO;
 import dao.MesaDAO;
 import dao.PedidoDAO;
 import dao.ProductoDAO;
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import modelo.DetallePedido;
@@ -17,6 +19,7 @@ import modelo.Usuario;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import servicio.BoletaService;
 import servicio.CalculadoraPedido;
 
 public class PedidosController {
@@ -25,6 +28,7 @@ public class PedidosController {
     private final IMesaDAO mesaDAO;
     private final IProductoDAO productoDAO;
     private final CalculadoraPedido calculadora;
+    private final BoletaService boletaService = new BoletaService();
 
     public PedidosController() {
         this(new PedidoDAO(), new MesaDAO(), new ProductoDAO(), new CalculadoraPedido());
@@ -39,6 +43,20 @@ public class PedidosController {
 
     public List<Pedido> listarPedidos() throws SQLException {
         return pedidoDAO.listarRecientes();
+    }
+
+    public Pedido buscarPedido(String codigo) throws SQLException {
+        if (StringUtils.isBlank(codigo)) {
+            throw new IllegalArgumentException("Seleccione un pedido.");
+        }
+        return pedidoDAO.buscarPorCodigo(codigo);
+    }
+
+    public List<DetallePedido> listarDetalles(String codigo) throws SQLException {
+        if (StringUtils.isBlank(codigo)) {
+            throw new IllegalArgumentException("Seleccione un pedido.");
+        }
+        return pedidoDAO.listarDetalles(codigo);
     }
 
     public List<Mesa> listarMesas() throws SQLException {
@@ -88,6 +106,26 @@ public class PedidosController {
         }
         LOGGER.info("Creando pedido para {} en {} con productos: {}", clienteNormalizado, delivery ? "Delivery" : "mesa " + mesa.getNumero(), resumenProductos(detalles));
         pedidoDAO.crearPedido(usuario.getIdUsuario(), delivery ? 0 : mesa.getIdMesa(), clienteNormalizado, metodoPago, detalles);
+    }
+
+    public File procesarPagoYGenerarBoleta(String codigo, String metodoPago, File carpetaBoletas) throws SQLException, IOException {
+        if (StringUtils.isBlank(codigo)) {
+            throw new IllegalArgumentException("Seleccione un pedido para pagar.");
+        }
+        if (StringUtils.isBlank(metodoPago)) {
+            throw new IllegalArgumentException("Seleccione un método de pago.");
+        }
+        Pedido pedidoActual = pedidoDAO.buscarPorCodigo(codigo);
+        if (pedidoActual == null) {
+            throw new IllegalArgumentException("El pedido seleccionado ya no existe.");
+        }
+        if ("COMPLETADO".equalsIgnoreCase(pedidoActual.getEstado())) {
+            throw new IllegalArgumentException("El pedido ya fue pagado.");
+        }
+        pedidoDAO.registrarPago(codigo, metodoPago);
+        Pedido pedidoPagado = pedidoDAO.buscarPorCodigo(codigo);
+        List<DetallePedido> detalles = pedidoDAO.listarDetalles(codigo);
+        return boletaService.generar(pedidoPagado, detalles, carpetaBoletas);
     }
 
     public void eliminarPedido(String codigo) throws SQLException {

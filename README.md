@@ -56,8 +56,9 @@ Para cambiar estos valores edite:
 - Gestion visual de mesas con estado libre/ocupado.
 - Catalogo de productos en tarjetas.
 - Agregar, editar y eliminar productos.
-- Crear pedidos con productos y cantidades.
-- Registro automatico en caja.
+- Crear pedidos con productos y cantidades en estado pendiente.
+- Proceder con pago desde pedidos, escoger método de pago y generar boleta.
+- Registro automático en caja al completar el pago.
 - Historial de caja por fecha.
 - Cerrar sesión.
 
