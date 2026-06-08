@@ -5,6 +5,8 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Color;
+import javax.swing.BoxLayout;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -270,49 +272,255 @@ public class PedidosPanel extends JPanel {
         JTextField ruc = new JTextField();
         JTextField razon = new JTextField();
         JTextField direccion = new JTextField();
+        JTextField email = new JTextField();
+        JTextField telefono = new JTextField();
         JCheckBox confirmado = new JCheckBox("Confirmo que el pago fue recibido/aprobado");
         confirmado.setOpaque(false);
         JLabel qr = new JLabel(Recursos.imagen("Código_QR.jpg", 160, 160));
         qr.setVisible(false);
 
+        // Labels de error inline
+        javax.swing.JLabel nombreErr = new javax.swing.JLabel("");
+        nombreErr.setForeground(Color.RED);
+        nombreErr.setVisible(false);
+        javax.swing.JLabel dniErr = new javax.swing.JLabel("");
+        dniErr.setForeground(Color.RED);
+        dniErr.setVisible(false);
+        javax.swing.JLabel rucErr = new javax.swing.JLabel("");
+        rucErr.setForeground(Color.RED);
+        rucErr.setVisible(false);
+        javax.swing.JLabel razonErr = new javax.swing.JLabel("");
+        razonErr.setForeground(Color.RED);
+        razonErr.setVisible(false);
+        javax.swing.JLabel direccionErr = new javax.swing.JLabel("");
+        direccionErr.setForeground(Color.RED);
+        direccionErr.setVisible(false);
+        javax.swing.JLabel emailErr = new javax.swing.JLabel("");
+        emailErr.setForeground(Color.RED);
+        emailErr.setVisible(false);
+        javax.swing.JLabel telefonoErr = new javax.swing.JLabel("");
+        telefonoErr.setForeground(Color.RED);
+        telefonoErr.setVisible(false);
+
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        JPanel campos = new JPanel(new GridLayout(0, 2, 8, 8));
-        campos.add(labelFormulario("Método de pago"));
-        campos.add(metodo);
-        campos.add(labelFormulario("Comprobante"));
-        campos.add(tipo);
-        campos.add(labelFormulario("Nombre"));
-        campos.add(nombre);
-        campos.add(labelFormulario("DNI"));
-        campos.add(dni);
-        campos.add(labelFormulario("RUC"));
-        campos.add(ruc);
-        campos.add(labelFormulario("Razón social"));
-        campos.add(razon);
-        campos.add(labelFormulario("Dirección"));
-        campos.add(direccion);
-        campos.add(new JLabel(""));
-        campos.add(confirmado);
+        JPanel campos = new JPanel();
+        campos.setLayout(new BoxLayout(campos, BoxLayout.Y_AXIS));
+        campos.setOpaque(false);
+
+        // fila método
+        JPanel filaMetodo = new JPanel(new BorderLayout(6, 6));
+        filaMetodo.setOpaque(false);
+        filaMetodo.add(labelFormulario("Método de pago"), BorderLayout.WEST);
+        filaMetodo.add(metodo, BorderLayout.CENTER);
+        campos.add(filaMetodo);
+
+        // fila tipo
+        JPanel filaTipo = new JPanel(new BorderLayout(6, 6));
+        filaTipo.setOpaque(false);
+        filaTipo.add(labelFormulario("Comprobante"), BorderLayout.WEST);
+        filaTipo.add(tipo, BorderLayout.CENTER);
+        campos.add(filaTipo);
+
+        // fila nombre
+        JPanel filaNombre = new JPanel(new BorderLayout(6, 6));
+        filaNombre.setOpaque(false);
+        filaNombre.add(labelFormulario("Nombre"), BorderLayout.WEST);
+        filaNombre.add(nombre, BorderLayout.CENTER);
+        filaNombre.add(nombreErr, BorderLayout.EAST);
+        campos.add(filaNombre);
+
+        // fila dni
+        JPanel filaDni = new JPanel(new BorderLayout(6, 6));
+        filaDni.setOpaque(false);
+        filaDni.add(labelFormulario("DNI"), BorderLayout.WEST);
+        filaDni.add(dni, BorderLayout.CENTER);
+        filaDni.add(dniErr, BorderLayout.EAST);
+        campos.add(filaDni);
+
+        // fila ruc
+        JPanel filaRuc = new JPanel(new BorderLayout(6, 6));
+        filaRuc.setOpaque(false);
+        filaRuc.add(labelFormulario("RUC"), BorderLayout.WEST);
+        filaRuc.add(ruc, BorderLayout.CENTER);
+        filaRuc.add(rucErr, BorderLayout.EAST);
+        campos.add(filaRuc);
+
+        // fila razon
+        JPanel filaRazon = new JPanel(new BorderLayout(6, 6));
+        filaRazon.setOpaque(false);
+        filaRazon.add(labelFormulario("Razón social"), BorderLayout.WEST);
+        filaRazon.add(razon, BorderLayout.CENTER);
+        filaRazon.add(razonErr, BorderLayout.EAST);
+        campos.add(filaRazon);
+
+        // fila direccion
+        JPanel filaDireccion = new JPanel(new BorderLayout(6, 6));
+        filaDireccion.setOpaque(false);
+        filaDireccion.add(labelFormulario("Dirección"), BorderLayout.WEST);
+        filaDireccion.add(direccion, BorderLayout.CENTER);
+        filaDireccion.add(direccionErr, BorderLayout.EAST);
+        campos.add(filaDireccion);
+
+        // fila email
+        JPanel filaEmail = new JPanel(new BorderLayout(6, 6));
+        filaEmail.setOpaque(false);
+        filaEmail.add(labelFormulario("Email"), BorderLayout.WEST);
+        filaEmail.add(email, BorderLayout.CENTER);
+        filaEmail.add(emailErr, BorderLayout.EAST);
+        campos.add(filaEmail);
+
+        // fila telefono
+        JPanel filaTelefono = new JPanel(new BorderLayout(6, 6));
+        filaTelefono.setOpaque(false);
+        filaTelefono.add(labelFormulario("Teléfono"), BorderLayout.WEST);
+        filaTelefono.add(telefono, BorderLayout.CENTER);
+        filaTelefono.add(telefonoErr, BorderLayout.EAST);
+        campos.add(filaTelefono);
+
+        // fila confirmado
+        JPanel filaConfirmado = new JPanel(new BorderLayout());
+        filaConfirmado.setOpaque(false);
+        filaConfirmado.add(new JLabel(""), BorderLayout.WEST);
+        filaConfirmado.add(confirmado, BorderLayout.CENTER);
+        campos.add(filaConfirmado);
+
         panel.add(campos, BorderLayout.CENTER);
         panel.add(qr, BorderLayout.EAST);
+
+        // helper para actualizar visibilidad según tipo
+        java.util.function.Consumer<String> ajustarSegunTipo = (seleccion) -> {
+            boolean esBoletaSimple = "Boleta simple".equals(seleccion);
+            boolean esBoletaDni = "Boleta con DNI".equals(seleccion);
+            boolean esFactura = "Factura".equals(seleccion);
+
+            // Nombre: visible en boleta con dni, oculto en factura y boleta simple
+            filaNombre.setVisible(esBoletaDni);
+            nombreErr.setVisible(false);
+
+            // DNI: visible solo en boleta con dni
+            filaDni.setVisible(esBoletaDni);
+            dniErr.setVisible(false);
+
+            // RUC / Razon / Direccion: visibles solo en Factura
+            filaRuc.setVisible(esFactura);
+            filaRazon.setVisible(esFactura);
+            filaDireccion.setVisible(esFactura);
+            filaEmail.setVisible(esFactura);
+            filaTelefono.setVisible(esFactura);
+            rucErr.setVisible(false);
+            razonErr.setVisible(false);
+            direccionErr.setVisible(false);
+            emailErr.setVisible(false);
+            telefonoErr.setVisible(false);
+
+            // Si boleta simple ocultamos todos los campos de cliente
+            if (esBoletaSimple) {
+                filaNombre.setVisible(false);
+                filaDni.setVisible(false);
+                filaRuc.setVisible(false);
+                filaRazon.setVisible(false);
+                filaDireccion.setVisible(false);
+            }
+            panel.revalidate();
+            panel.repaint();
+        };
+
+        tipo.addActionListener(e -> ajustarSegunTipo.accept(tipo.getSelectedItem().toString()));
+        // inicializar visibilidad
+        ajustarSegunTipo.accept(tipo.getSelectedItem().toString());
+
         metodo.addActionListener(e -> {
             qr.setVisible("Yape".equals(metodo.getSelectedItem()));
             panel.revalidate();
             panel.repaint();
         });
 
-        int ok = JOptionPane.showConfirmDialog(this, panel, "Pago y comprobante", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-        if (ok != JOptionPane.OK_OPTION) {
-            return null;
+        // Mostrar diálogo en loop para permitir validación inline sin cerrar inmediatamente
+        while (true) {
+            int ok = JOptionPane.showConfirmDialog(this, panel, "Pago y comprobante", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+            if (ok != JOptionPane.OK_OPTION) {
+                return null;
+            }
+            if (!confirmado.isSelected()) {
+                JOptionPane.showMessageDialog(this, "Debe confirmar que el pago fue recibido o aprobado.", "Atención", JOptionPane.WARNING_MESSAGE);
+                continue;
+            }
+
+            // limpiar errores
+            nombreErr.setText(""); nombreErr.setVisible(false);
+            dniErr.setText(""); dniErr.setVisible(false);
+            rucErr.setText(""); rucErr.setVisible(false);
+            razonErr.setText(""); razonErr.setVisible(false);
+            direccionErr.setText(""); direccionErr.setVisible(false);
+
+            String tipoVisible = tipo.getSelectedItem().toString();
+            String tipoValor = tipoComprobante(tipoVisible);
+            boolean valido = true;
+
+            if ("Boleta con DNI".equals(tipoVisible)) {
+                if (nombre.getText().trim().isEmpty()) {
+                    nombreErr.setText("Nombre obligatorio");
+                    nombreErr.setVisible(true);
+                    if (valido) { nombre.requestFocus(); }
+                    valido = false;
+                }
+                if (!dni.getText().trim().matches("\\d{8}")) {
+                    dniErr.setText("DNI inválido (8 dígitos)");
+                    dniErr.setVisible(true);
+                    if (valido) { dni.requestFocus(); }
+                    valido = false;
+                }
+            } else if ("Factura".equals(tipoVisible)) {
+                if (!ruc.getText().trim().matches("\\d{11}")) {
+                    rucErr.setText("RUC inválido (11 dígitos)");
+                    rucErr.setVisible(true);
+                    if (valido) { ruc.requestFocus(); }
+                    valido = false;
+                }
+                if (razon.getText().trim().isEmpty()) {
+                    razonErr.setText("Razón social obligatoria");
+                    razonErr.setVisible(true);
+                    if (valido) { razon.requestFocus(); }
+                    valido = false;
+                }
+                if (direccion.getText().trim().isEmpty()) {
+                    direccionErr.setText("Dirección obligatoria");
+                    direccionErr.setVisible(true);
+                    if (valido) { direccion.requestFocus(); }
+                    valido = false;
+                }
+                if (email.getText().trim().isEmpty()) {
+                    emailErr.setText("Email obligatorio");
+                    emailErr.setVisible(true);
+                    if (valido) { email.requestFocus(); }
+                    valido = false;
+                } else if (!email.getText().trim().matches("[^@\\s]+@[^@\\s]+\\.[^@\\s]+")) {
+                    emailErr.setText("Email inválido");
+                    emailErr.setVisible(true);
+                    if (valido) { email.requestFocus(); }
+                    valido = false;
+                }
+                if (!telefono.getText().trim().matches("\\d{6,15}")) {
+                    telefonoErr.setText("Teléfono inválido (6-15 dígitos)");
+                    telefonoErr.setVisible(true);
+                    if (valido) { telefono.requestFocus(); }
+                    valido = false;
+                }
+            }
+
+            if (!valido) {
+                // volver a mostrar el diálogo con errores inline
+                continue;
+            }
+
+                // enviar al controlador
+                return controller.procesarPagoYGenerarComprobante(pedido.getCodigo(), metodo.getSelectedItem().toString(), tipoValor,
+                    // Para Boleta simple dejamos vacío (sin datos de cliente)
+                    "Boleta simple".equals(tipoVisible) ? "" : nombre.getText(),
+                    dni.getText(), ruc.getText(), razon.getText(), direccion.getText(), email.getText(), telefono.getText(),
+                    new File("reportes/comprobantes"));
         }
-        if (!confirmado.isSelected()) {
-            throw new IllegalArgumentException("Debe confirmar que el pago fue recibido o aprobado.");
-        }
-        String tipoValor = tipoComprobante(tipo.getSelectedItem().toString());
-        return controller.procesarPagoYGenerarComprobante(pedido.getCodigo(), metodo.getSelectedItem().toString(), tipoValor,
-                nombre.getText(), dni.getText(), ruc.getText(), razon.getText(), direccion.getText(),
-                new File("reportes/comprobantes"));
     }
 
     private void verComprobanteSeleccionado() {
