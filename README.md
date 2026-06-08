@@ -54,12 +54,12 @@ Para cambiar estos valores edite:
 - Login con MySQL.
 - Dashboard con ventas del día, caja, pedidos y productos.
 - Gestion visual de mesas con estado libre/ocupado.
-- Catalogo de productos en tarjetas.
+- Catálogo de productos organizado por Crepés dulces, Crepés salados y Bebidas.
 - Agregar, editar y eliminar productos.
 - Crear pedidos con productos y cantidades en estado pendiente.
-- Proceder con pago desde pedidos, escoger método de pago y generar boleta.
+- Proceder con pago desde pedidos, confirmar efectivo/tarjeta/Yape y generar boleta o factura PDF.
 - Registro automático en caja al completar el pago.
-- Historial de caja por fecha.
+- Historial de caja por rango de fechas con previsualización de comprobantes.
 - Cerrar sesión.
 
 ## Arquitectura
@@ -83,6 +83,7 @@ El proyecto incluye librerias externas en la carpeta `lib` y estan registradas e
 - Apache POI: creacion y lectura de archivos Excel.
 - Apache Commons: utilidades generales como `StringUtils` de Commons Lang.
 - Logback: sistema de logs mediante SLF4J.
+- Apache PDFBox: generación de boletas y facturas en PDF.
 
 Tambien se incluye `lib-dependencies-pom.xml`, que sirve solo para descargar dependencias con Maven hacia `lib`; el proyecto principal sigue siendo Java Ant.
 
@@ -92,6 +93,7 @@ Implementacion dentro de funciones reales:
 - Apache Commons: los controladores limpian y normalizan nombres de productos, categorias y clientes.
 - Google Guava: el controlador de pedidos crea resumenes de productos usando `Joiner`.
 - Logback: DAOs y controladores registran eventos importantes, como pedidos guardados o reportes exportados.
+- Apache PDFBox: el flujo de pago genera comprobantes PDF en `reportes/comprobantes`.
 
 Clases principales:
 

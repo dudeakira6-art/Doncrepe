@@ -8,11 +8,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import modelo.Caja;
+import modelo.Comprobante;
 import modelo.DetallePedido;
 import modelo.Pedido;
 import modelo.Producto;
-import servicio.BoletaService;
 import servicio.CalculadoraPedido;
+import servicio.ComprobanteService;
 import servicio.ReporteCajaExcelService;
 
 public class PruebasTDD {
@@ -28,7 +29,8 @@ public class PruebasTDD {
         pruebas.debeNormalizarClienteYResumirPedidoConGuava();
         pruebas.debeSumarMovimientosDeCaja();
         pruebas.debeExportarCajaConApachePOI();
-        pruebas.debeGenerarBoletaDePedido();
+        pruebas.debeGenerarComprobantePdf();
+        pruebas.debeValidarDatosDeFactura();
         System.out.println("TDD OK - pruebas ejecutadas: " + pruebas.pruebasEjecutadas);
     }
 
@@ -116,18 +118,31 @@ public class PruebasTDD {
         }
     }
 
-    private void debeGenerarBoletaDePedido() {
+    private void debeGenerarComprobantePdf() {
         List<DetallePedido> detalles = new ArrayList<DetallePedido>();
         detalles.add(new DetallePedido(new Producto(1, "Crepe de Fresa", "Crepe", 12.00, "", true), 2));
         Pedido pedido = new Pedido(1, "P-TDD", "Cliente TDD", 24.00, "Efectivo", "COMPLETADO", new Date(), 1);
-        File carpeta = new File("build/test/boletas");
-        File archivo = new File(carpeta, "boleta_P-TDD.txt");
+        File carpeta = new File("build/test/comprobantes");
+        Comprobante comprobante = new Comprobante(0, 1, Comprobante.BOLETA_DNI, "B001-TDD", "Cliente TDD", "12345678", "", "", "", "B001-TDD.pdf", new Date());
+        File archivo = new File(carpeta, "B001-TDD.pdf");
 
         try {
-            new BoletaService().generar(pedido, detalles, carpeta);
-            assertTrue(archivo.exists() && archivo.length() > 0, "La boleta debe generarse como archivo de texto.");
+            new ComprobanteService().generarPdf(pedido, detalles, comprobante, carpeta);
+            assertTrue(archivo.exists() && archivo.length() > 0, "PDFBox debe generar el comprobante PDF.");
         } catch (Exception ex) {
-            throw new AssertionError("No se pudo generar la boleta: " + ex.getMessage());
+            throw new AssertionError("No se pudo generar el comprobante PDF: " + ex.getMessage());
+        }
+    }
+
+    private void debeValidarDatosDeFactura() {
+        PedidosController controller = new PedidosController(null, null, null, new CalculadoraPedido());
+        try {
+            controller.validarDatosComprobante(Comprobante.FACTURA, "", "", "123", "", "");
+            throw new AssertionError("Se esperaba error por RUC invalido.");
+        } catch (IllegalArgumentException ex) {
+            assertTrue(ex.getMessage().contains("RUC"), "La factura debe validar RUC.");
+        } catch (Exception ex) {
+            throw new AssertionError("No se esperaba otro tipo de error: " + ex.getMessage());
         }
     }
 

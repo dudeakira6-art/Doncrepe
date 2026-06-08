@@ -11,16 +11,18 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import modelo.Comprobante;
 import modelo.DetallePedido;
 import modelo.Mesa;
 import modelo.Pedido;
 import modelo.Producto;
+import modelo.ResultadoComprobante;
 import modelo.Usuario;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import servicio.BoletaService;
 import servicio.CalculadoraPedido;
+import servicio.ComprobanteService;
 
 public class PedidosController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PedidosController.class);
@@ -28,7 +30,7 @@ public class PedidosController {
     private final IMesaDAO mesaDAO;
     private final IProductoDAO productoDAO;
     private final CalculadoraPedido calculadora;
-    private final BoletaService boletaService = new BoletaService();
+    private final ComprobanteService comprobanteService = new ComprobanteService();
 
     public PedidosController() {
         this(new PedidoDAO(), new MesaDAO(), new ProductoDAO(), new CalculadoraPedido());
@@ -59,6 +61,25 @@ public class PedidosController {
         return pedidoDAO.listarDetalles(codigo);
     }
 
+    public Comprobante buscarComprobante(String codigo) throws SQLException {
+        if (StringUtils.isBlank(codigo)) {
+            throw new IllegalArgumentException("Seleccione un pedido.");
+        }
+        return pedidoDAO.buscarComprobantePorPedido(codigo);
+    }
+
+    public ResultadoComprobante obtenerComprobante(String codigo) throws SQLException {
+        Pedido pedido = buscarPedido(codigo);
+        if (pedido == null) {
+            throw new IllegalArgumentException("El pedido seleccionado ya no existe.");
+        }
+        Comprobante comprobante = buscarComprobante(codigo);
+        if (comprobante == null) {
+            throw new IllegalArgumentException("El pedido no tiene comprobante registrado.");
+        }
+        return new ResultadoComprobante(pedido, listarDetalles(codigo), comprobante, new File(comprobante.getArchivoPdf()));
+    }
+
     public List<Mesa> listarMesas() throws SQLException {
         return mesaDAO.listar();
     }
@@ -86,13 +107,11 @@ public class PedidosController {
     }
 
     public void crearPedido(Usuario usuario, Mesa mesa, String cliente, String metodoPago, List<DetallePedido> detalles, boolean delivery) throws SQLException {
-        if (usuario == null || mesa == null) {
-            if (!delivery) {
-                throw new IllegalArgumentException("Debe seleccionar empleado y mesa.");
-            }
-        }
         if (usuario == null) {
-            throw new IllegalArgumentException("Debe seleccionar empleado y mesa.");
+            throw new IllegalArgumentException("Debe seleccionar empleado.");
+        }
+        if (!delivery && mesa == null) {
+            throw new IllegalArgumentException("Debe seleccionar una mesa.");
         }
         String clienteNormalizado = normalizarCliente(cliente);
         if (StringUtils.isBlank(clienteNormalizado)) {
@@ -102,19 +121,22 @@ public class PedidosController {
             throw new IllegalArgumentException("Agregue al menos un producto.");
         }
         if (!delivery && !"LIBRE".equalsIgnoreCase(mesa.getEstado())) {
-            throw new IllegalArgumentException("La mesa seleccionada esta ocupada.");
+            throw new IllegalArgumentException("La mesa seleccionada está ocupada.");
         }
         LOGGER.info("Creando pedido para {} en {} con productos: {}", clienteNormalizado, delivery ? "Delivery" : "mesa " + mesa.getNumero(), resumenProductos(detalles));
         pedidoDAO.crearPedido(usuario.getIdUsuario(), delivery ? 0 : mesa.getIdMesa(), clienteNormalizado, metodoPago, detalles);
     }
 
-    public File procesarPagoYGenerarBoleta(String codigo, String metodoPago, File carpetaBoletas) throws SQLException, IOException {
+    public ResultadoComprobante procesarPagoYGenerarComprobante(String codigo, String metodoPago, String tipoComprobante,
+            String clienteNombre, String dni, String ruc, String razonSocial, String direccion, File carpetaComprobantes)
+            throws SQLException, IOException {
         if (StringUtils.isBlank(codigo)) {
             throw new IllegalArgumentException("Seleccione un pedido para pagar.");
         }
-        if (StringUtils.isBlank(metodoPago)) {
-            throw new IllegalArgumentException("Seleccione un método de pago.");
+        if (!"Efectivo".equals(metodoPago) && !"Tarjeta".equals(metodoPago) && !"Yape".equals(metodoPago)) {
+            throw new IllegalArgumentException("Seleccione un método de pago válido.");
         }
+        validarDatosComprobante(tipoComprobante, clienteNombre, dni, ruc, razonSocial, direccion);
         Pedido pedidoActual = pedidoDAO.buscarPorCodigo(codigo);
         if (pedidoActual == null) {
             throw new IllegalArgumentException("El pedido seleccionado ya no existe.");
@@ -122,10 +144,51 @@ public class PedidosController {
         if ("COMPLETADO".equalsIgnoreCase(pedidoActual.getEstado())) {
             throw new IllegalArgumentException("El pedido ya fue pagado.");
         }
-        pedidoDAO.registrarPago(codigo, metodoPago);
-        Pedido pedidoPagado = pedidoDAO.buscarPorCodigo(codigo);
+        Comprobante comprobante = construirComprobante(pedidoActual, tipoComprobante, clienteNombre, dni, ruc, razonSocial, direccion, carpetaComprobantes);
         List<DetallePedido> detalles = pedidoDAO.listarDetalles(codigo);
-        return boletaService.generar(pedidoPagado, detalles, carpetaBoletas);
+        Pedido pedidoParaComprobante = new Pedido(
+                pedidoActual.getIdPedido(),
+                pedidoActual.getCodigo(),
+                pedidoActual.getCliente(),
+                pedidoActual.getTotal(),
+                metodoPago,
+                "COMPLETADO",
+                pedidoActual.getFecha(),
+                pedidoActual.getMesaNumero());
+        File pdf = comprobanteService.generarPdf(pedidoParaComprobante, detalles, comprobante, carpetaComprobantes);
+        try {
+            pedidoDAO.registrarPago(codigo, metodoPago, comprobante);
+        } catch (SQLException ex) {
+            if (pdf.exists() && !pdf.delete()) {
+                LOGGER.warn("No se pudo eliminar el PDF huérfano {}", pdf.getAbsolutePath());
+            }
+            throw ex;
+        }
+        Pedido pedidoPagado = pedidoDAO.buscarPorCodigo(codigo);
+        return new ResultadoComprobante(pedidoPagado, detalles, comprobante, pdf);
+    }
+
+    public void validarDatosComprobante(String tipo, String clienteNombre, String dni, String ruc, String razonSocial, String direccion) {
+        if (StringUtils.isBlank(tipo)) {
+            throw new IllegalArgumentException("Seleccione el tipo de comprobante.");
+        }
+        if (Comprobante.BOLETA_DNI.equals(tipo)) {
+            if (!StringUtils.defaultString(dni).matches("\\d{8}")) {
+                throw new IllegalArgumentException("El DNI debe tener 8 dígitos.");
+            }
+            if (StringUtils.isBlank(clienteNombre)) {
+                throw new IllegalArgumentException("Ingrese el nombre para la boleta.");
+            }
+        } else if (Comprobante.FACTURA.equals(tipo)) {
+            if (!StringUtils.defaultString(ruc).matches("\\d{11}")) {
+                throw new IllegalArgumentException("El RUC debe tener 11 dígitos.");
+            }
+            if (StringUtils.isBlank(razonSocial) || StringUtils.isBlank(direccion)) {
+                throw new IllegalArgumentException("Ingrese razón social y dirección para la factura.");
+            }
+        } else if (!Comprobante.BOLETA_SIMPLE.equals(tipo)) {
+            throw new IllegalArgumentException("Tipo de comprobante no válido.");
+        }
     }
 
     public void eliminarPedido(String codigo) throws SQLException {
@@ -153,5 +216,15 @@ public class PedidosController {
             nombres.add(detalle.getCantidad() + "x " + detalle.getProducto().getNombre());
         }
         return Joiner.on(", ").join(nombres);
+    }
+
+    private Comprobante construirComprobante(Pedido pedido, String tipo, String clienteNombre, String dni,
+            String ruc, String razonSocial, String direccion, File carpetaComprobantes) {
+        String numero = (Comprobante.FACTURA.equals(tipo) ? "F001-" : "B001-") + System.currentTimeMillis();
+        String archivo = new File(carpetaComprobantes, numero + ".pdf").getPath();
+        String nombre = StringUtils.defaultIfBlank(clienteNombre, pedido.getCliente());
+        return new Comprobante(0, pedido.getIdPedido(), tipo, numero, nombre.trim(), StringUtils.trimToEmpty(dni),
+                StringUtils.trimToEmpty(ruc), StringUtils.trimToEmpty(razonSocial), StringUtils.trimToEmpty(direccion),
+                archivo, new java.util.Date());
     }
 }

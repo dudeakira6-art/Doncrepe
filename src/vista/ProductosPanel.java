@@ -11,6 +11,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import modelo.Producto;
 import vista.componentes.NeonIcon;
@@ -18,7 +19,7 @@ import vista.componentes.ProductCard;
 import vista.componentes.WrapLayout;
 
 public class ProductosPanel extends JPanel {
-    private final JPanel grilla = new JPanel(new WrapLayout(FlowLayout.LEFT, 14, 14));
+    private final JTabbedPane tabs = new JTabbedPane();
     private final ProductosController controller = new ProductosController();
 
     public ProductosPanel() {
@@ -26,13 +27,8 @@ public class ProductosPanel extends JPanel {
         setBackground(Estilos.FONDO);
         setBorder(BorderFactory.createEmptyBorder(18, 18, 18, 18));
         add(crearBarra(), BorderLayout.NORTH);
-        grilla.setOpaque(false);
-        JScrollPane scroll = new JScrollPane(grilla);
-        scroll.setBorder(BorderFactory.createEmptyBorder());
-        scroll.getViewport().setBackground(Estilos.FONDO);
-        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scroll.getVerticalScrollBar().setUnitIncrement(16);
-        add(scroll, BorderLayout.CENTER);
+        tabs.setBackground(Estilos.FONDO);
+        add(tabs, BorderLayout.CENTER);
         cargar();
     }
 
@@ -54,24 +50,44 @@ public class ProductosPanel extends JPanel {
     }
 
     private void cargar() {
-        grilla.removeAll();
+        tabs.removeAll();
         try {
             List<Producto> productos = controller.listarProductos();
-            for (Producto producto : productos) {
-                ProductCard card = new ProductCard(producto);
-                card.addMouseListener(new java.awt.event.MouseAdapter() {
-                    @Override
-                    public void mouseClicked(java.awt.event.MouseEvent e) {
-                        mostrarOpciones(producto);
-                    }
-                });
-                grilla.add(card);
-            }
+            tabs.add("Crepés dulces", crearScrollCategoria(productos, "dulce"));
+            tabs.add("Crepés salados", crearScrollCategoria(productos, "salado"));
+            tabs.add("Bebidas", crearScrollCategoria(productos, "bebida"));
         } catch (Exception ex) {
-            grilla.add(new JLabel("No se pudieron cargar productos: " + ex.getMessage()));
+            JPanel error = new JPanel();
+            error.setOpaque(false);
+            error.add(new JLabel("No se pudieron cargar productos: " + ex.getMessage()));
+            tabs.add("Error", error);
         }
         revalidate();
         repaint();
+    }
+
+    private JScrollPane crearScrollCategoria(List<Producto> productos, String categoria) {
+        JPanel grilla = new JPanel(new WrapLayout(FlowLayout.LEFT, 14, 14));
+        grilla.setOpaque(false);
+        for (Producto producto : productos) {
+            if (!categoriaProducto(producto).equals(categoria)) {
+                continue;
+            }
+            ProductCard card = new ProductCard(producto);
+            card.addMouseListener(new java.awt.event.MouseAdapter() {
+                @Override
+                public void mouseClicked(java.awt.event.MouseEvent e) {
+                    mostrarOpciones(producto);
+                }
+            });
+            grilla.add(card);
+        }
+        JScrollPane scroll = new JScrollPane(grilla);
+        scroll.setBorder(BorderFactory.createEmptyBorder());
+        scroll.getViewport().setBackground(Estilos.FONDO);
+        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
+        return scroll;
     }
 
     private void mostrarOpciones(Producto producto) {
@@ -94,7 +110,7 @@ public class ProductosPanel extends JPanel {
         JPanel panel = new JPanel(new GridLayout(0, 1, 4, 4));
         panel.add(new JLabel("Nombre"));
         panel.add(nombre);
-        panel.add(new JLabel("Categoria"));
+        panel.add(new JLabel("Categoría"));
         panel.add(categoria);
         panel.add(new JLabel("Precio"));
         panel.add(precio);
@@ -121,7 +137,7 @@ public class ProductosPanel extends JPanel {
     }
 
     private void eliminar(Producto producto) {
-        int ok = JOptionPane.showConfirmDialog(this, "Eliminar " + producto.getNombre() + "?", "Confirmar", JOptionPane.YES_NO_OPTION);
+        int ok = JOptionPane.showConfirmDialog(this, "¿Eliminar " + producto.getNombre() + "?", "Confirmar", JOptionPane.YES_NO_OPTION);
         if (ok != JOptionPane.YES_OPTION) {
             return;
         }
@@ -131,5 +147,16 @@ public class ProductosPanel extends JPanel {
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "No se pudo eliminar:\n" + ex.getMessage());
         }
+    }
+
+    private String categoriaProducto(Producto producto) {
+        String nombre = producto.getNombre().toLowerCase();
+        if (nombre.contains("cafe") || nombre.contains("frappe") || nombre.contains("jugo") || nombre.contains("batido") || nombre.contains("coca")) {
+            return "bebida";
+        }
+        if (nombre.contains("jamon") || nombre.contains("queso") || nombre.contains("pollo") || nombre.contains("champi") || nombre.contains("veget") || nombre.contains("huevo")) {
+            return "salado";
+        }
+        return "dulce";
     }
 }

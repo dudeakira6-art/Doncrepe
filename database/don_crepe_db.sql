@@ -3,6 +3,7 @@ USE don_crepe_db;
 
 DROP TABLE IF EXISTS detalle_pedido;
 DROP TABLE IF EXISTS caja;
+DROP TABLE IF EXISTS comprobantes;
 DROP TABLE IF EXISTS pedidos;
 DROP TABLE IF EXISTS productos;
 DROP TABLE IF EXISTS mesas;
@@ -66,6 +67,21 @@ CREATE TABLE caja (
     CONSTRAINT fk_caja_pedido FOREIGN KEY (id_pedido) REFERENCES pedidos(id_pedido)
 );
 
+CREATE TABLE comprobantes (
+    id_comprobante INT AUTO_INCREMENT PRIMARY KEY,
+    id_pedido INT NOT NULL,
+    tipo VARCHAR(30) NOT NULL,
+    numero VARCHAR(40) NOT NULL,
+    cliente_nombre VARCHAR(160),
+    dni VARCHAR(20),
+    ruc VARCHAR(20),
+    razon_social VARCHAR(180),
+    direccion VARCHAR(220),
+    archivo_pdf VARCHAR(255),
+    fecha DATETIME NOT NULL,
+    CONSTRAINT fk_comprobantes_pedido FOREIGN KEY (id_pedido) REFERENCES pedidos(id_pedido)
+);
+
 INSERT INTO usuarios (nombre, usuario, password, rol) VALUES
 ('Milo Perez', 'admin', '8da193366e1554c08b2870c50f737b9587c3372b656151c4a96028af26f51334', 'Gerente'),
 ('Empleado Demo', 'empleado', 'dca336b52bdfda2695aa74dc0c9637532f08855804c493fe05d129acabc09ee2', 'Empleado');
@@ -108,3 +124,6 @@ INSERT INTO detalle_pedido (id_pedido, id_producto, cantidad, precio_unitario, s
 
 INSERT INTO caja (id_pedido, monto, metodo_pago, fecha, tipo_movimiento) VALUES
 (2, 20.00, 'Tarjeta', NOW(), 'VENTA');
+
+INSERT INTO comprobantes (id_pedido, tipo, numero, cliente_nombre, dni, ruc, razon_social, direccion, archivo_pdf, fecha) VALUES
+(2, 'BOLETA_SIMPLE', 'B001-DEMO', 'Andrea Ruiz', '', '', '', '', 'reportes/comprobantes/B001-DEMO.pdf', NOW());

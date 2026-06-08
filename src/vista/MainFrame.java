@@ -10,6 +10,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import modelo.Mesa;
 import modelo.Usuario;
 import vista.componentes.MenuLateral;
 import vista.componentes.NeonIcon;
@@ -19,6 +20,8 @@ public class MainFrame extends JFrame {
     private final Usuario usuario;
     private final JPanel contenido = new JPanel(new CardLayout());
     private final MenuLateral menu = new MenuLateral();
+    private MesasPanel mesasPanel;
+    private PedidosPanel pedidosPanel;
 
     public MainFrame(Usuario usuario) {
         this.usuario = usuario;
@@ -73,22 +76,32 @@ public class MainFrame extends JFrame {
                 mostrar(destino);
             }
         }), "Inicio");
-        contenido.add(new MesasPanel(), "Mesa");
-        contenido.add(new PedidosPanel(usuario, new Runnable() {
+        mesasPanel = new MesasPanel(new java.util.function.Consumer<Mesa>() {
+            @Override
+            public void accept(Mesa mesa) {
+                mostrar("Pedido");
+                pedidosPanel.abrirNuevoPedido(mesa);
+            }
+        });
+        contenido.add(mesasPanel, "Mesa");
+        pedidosPanel = new PedidosPanel(usuario, new Runnable() {
             @Override
             public void run() {
-                recargarPaneles();
+                refrescarDatos();
             }
-        }), "Pedido");
+        });
+        contenido.add(pedidosPanel, "Pedido");
         contenido.add(new ProductosPanel(), "Producto");
         contenido.add(new HistorialCajaPanel(), "Historial Caja");
     }
 
-    private void recargarPaneles() {
-        contenido.removeAll();
-        cargarPaneles();
-        contenido.revalidate();
-        contenido.repaint();
+    private void refrescarDatos() {
+        if (mesasPanel != null) {
+            mesasPanel.refrescar();
+        }
+        if (pedidosPanel != null) {
+            pedidosPanel.refrescar();
+        }
     }
 
     private void configurarMenu() {

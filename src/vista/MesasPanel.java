@@ -4,6 +4,7 @@ import controlador.MesasController;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.util.List;
+import java.util.function.Consumer;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -16,8 +17,14 @@ import vista.componentes.WrapLayout;
 public class MesasPanel extends JPanel {
     private final JPanel grilla = new JPanel(new WrapLayout(FlowLayout.LEFT, 16, 16));
     private final MesasController controller = new MesasController();
+    private final Consumer<Mesa> alOcuparMesa;
 
     public MesasPanel() {
+        this(null);
+    }
+
+    public MesasPanel(Consumer<Mesa> alOcuparMesa) {
+        this.alOcuparMesa = alOcuparMesa;
         setLayout(new BorderLayout(10, 10));
         setBackground(Estilos.FONDO);
         setBorder(BorderFactory.createEmptyBorder(18, 18, 18, 18));
@@ -33,6 +40,10 @@ public class MesasPanel extends JPanel {
         scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.getVerticalScrollBar().setUnitIncrement(16);
         add(scroll, BorderLayout.CENTER);
+    }
+
+    public void refrescar() {
+        cargar();
     }
 
     private void cargar() {
@@ -56,7 +67,14 @@ public class MesasPanel extends JPanel {
 
     private void cambiarEstado(Mesa mesa) {
         String nuevo = "LIBRE".equalsIgnoreCase(mesa.getEstado()) ? "OCUPADO" : "LIBRE";
-        int ok = JOptionPane.showConfirmDialog(this, "Cambiar Mesa " + mesa.getNumero() + " a " + nuevo + "?", "Mesas", JOptionPane.YES_NO_OPTION);
+        if ("OCUPADO".equals(nuevo) && alOcuparMesa != null) {
+            int abrir = JOptionPane.showConfirmDialog(this, "¿Crear un pedido para la Mesa " + mesa.getNumero() + "?", "Mesas", JOptionPane.YES_NO_OPTION);
+            if (abrir == JOptionPane.YES_OPTION) {
+                alOcuparMesa.accept(mesa);
+            }
+            return;
+        }
+        int ok = JOptionPane.showConfirmDialog(this, "¿Cambiar Mesa " + mesa.getNumero() + " a " + nuevo + "?", "Mesas", JOptionPane.YES_NO_OPTION);
         if (ok != JOptionPane.YES_OPTION) {
             return;
         }

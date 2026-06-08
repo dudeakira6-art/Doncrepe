@@ -36,6 +36,13 @@ public class HistorialCajaController {
         return cajaDAO.listarPorFecha(fechaNormalizada);
     }
 
+    public List<Caja> listarPorRango(String desde, String hasta) throws SQLException {
+        String desdeNormalizada = StringUtils.trimToEmpty(desde);
+        String hastaNormalizada = StringUtils.trimToEmpty(hasta);
+        LOGGER.info("Consultando historial de caja entre {} y {}", desdeNormalizada, hastaNormalizada);
+        return cajaDAO.listarPorRango(desdeNormalizada, hastaNormalizada);
+    }
+
     public double sumarMovimientos(List<Caja> movimientos) {
         double total = 0;
         for (Caja caja : movimientos) {
@@ -52,5 +59,16 @@ public class HistorialCajaController {
         }
         File archivo = new File(carpetaDestino, "caja_" + fechaNormalizada + ".xlsx");
         return reporteCajaExcelService.exportar(movimientos, fechaNormalizada, archivo);
+    }
+
+    public File exportarExcel(String desde, String hasta, File carpetaDestino) throws SQLException, IOException {
+        String desdeNormalizada = StringUtils.trimToEmpty(desde);
+        String hastaNormalizada = StringUtils.trimToEmpty(hasta);
+        List<Caja> movimientos = listarPorRango(desdeNormalizada, hastaNormalizada);
+        if (!carpetaDestino.exists() && !carpetaDestino.mkdirs()) {
+            throw new IOException("No se pudo crear la carpeta de reportes.");
+        }
+        File archivo = new File(carpetaDestino, "caja_" + desdeNormalizada + "_" + hastaNormalizada + ".xlsx");
+        return reporteCajaExcelService.exportar(movimientos, desdeNormalizada + " a " + hastaNormalizada, archivo);
     }
 }
