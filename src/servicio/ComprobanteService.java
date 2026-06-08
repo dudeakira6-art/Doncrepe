@@ -61,6 +61,12 @@ public class ComprobanteService {
             lineas.add("RUC: " + comprobante.getRuc());
             lineas.add("Razón social: " + comprobante.getRazonSocial());
             lineas.add("Dirección: " + comprobante.getDireccion());
+            if (comprobante.getEmail() != null && !comprobante.getEmail().trim().isEmpty()) {
+                lineas.add("Email: " + comprobante.getEmail());
+            }
+            if (comprobante.getTelefono() != null && !comprobante.getTelefono().trim().isEmpty()) {
+                lineas.add("Teléfono: " + comprobante.getTelefono());
+            }
         } else {
             if (comprobante.getClienteNombre() != null && !comprobante.getClienteNombre().trim().isEmpty()) {
                 lineas.add("Cliente: " + comprobante.getClienteNombre());

@@ -272,6 +272,8 @@ public class PedidosPanel extends JPanel {
         JTextField ruc = new JTextField();
         JTextField razon = new JTextField();
         JTextField direccion = new JTextField();
+        JTextField email = new JTextField();
+        JTextField telefono = new JTextField();
         JCheckBox confirmado = new JCheckBox("Confirmo que el pago fue recibido/aprobado");
         confirmado.setOpaque(false);
         JLabel qr = new JLabel(Recursos.imagen("Código_QR.jpg", 160, 160));
@@ -293,6 +295,12 @@ public class PedidosPanel extends JPanel {
         javax.swing.JLabel direccionErr = new javax.swing.JLabel("");
         direccionErr.setForeground(Color.RED);
         direccionErr.setVisible(false);
+        javax.swing.JLabel emailErr = new javax.swing.JLabel("");
+        emailErr.setForeground(Color.RED);
+        emailErr.setVisible(false);
+        javax.swing.JLabel telefonoErr = new javax.swing.JLabel("");
+        telefonoErr.setForeground(Color.RED);
+        telefonoErr.setVisible(false);
 
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -354,6 +362,22 @@ public class PedidosPanel extends JPanel {
         filaDireccion.add(direccionErr, BorderLayout.EAST);
         campos.add(filaDireccion);
 
+        // fila email
+        JPanel filaEmail = new JPanel(new BorderLayout(6, 6));
+        filaEmail.setOpaque(false);
+        filaEmail.add(labelFormulario("Email"), BorderLayout.WEST);
+        filaEmail.add(email, BorderLayout.CENTER);
+        filaEmail.add(emailErr, BorderLayout.EAST);
+        campos.add(filaEmail);
+
+        // fila telefono
+        JPanel filaTelefono = new JPanel(new BorderLayout(6, 6));
+        filaTelefono.setOpaque(false);
+        filaTelefono.add(labelFormulario("Teléfono"), BorderLayout.WEST);
+        filaTelefono.add(telefono, BorderLayout.CENTER);
+        filaTelefono.add(telefonoErr, BorderLayout.EAST);
+        campos.add(filaTelefono);
+
         // fila confirmado
         JPanel filaConfirmado = new JPanel(new BorderLayout());
         filaConfirmado.setOpaque(false);
@@ -382,9 +406,13 @@ public class PedidosPanel extends JPanel {
             filaRuc.setVisible(esFactura);
             filaRazon.setVisible(esFactura);
             filaDireccion.setVisible(esFactura);
+            filaEmail.setVisible(esFactura);
+            filaTelefono.setVisible(esFactura);
             rucErr.setVisible(false);
             razonErr.setVisible(false);
             direccionErr.setVisible(false);
+            emailErr.setVisible(false);
+            telefonoErr.setVisible(false);
 
             // Si boleta simple ocultamos todos los campos de cliente
             if (esBoletaSimple) {
@@ -462,6 +490,23 @@ public class PedidosPanel extends JPanel {
                     if (valido) { direccion.requestFocus(); }
                     valido = false;
                 }
+                if (email.getText().trim().isEmpty()) {
+                    emailErr.setText("Email obligatorio");
+                    emailErr.setVisible(true);
+                    if (valido) { email.requestFocus(); }
+                    valido = false;
+                } else if (!email.getText().trim().matches("[^@\\s]+@[^@\\s]+\\.[^@\\s]+")) {
+                    emailErr.setText("Email inválido");
+                    emailErr.setVisible(true);
+                    if (valido) { email.requestFocus(); }
+                    valido = false;
+                }
+                if (!telefono.getText().trim().matches("\\d{6,15}")) {
+                    telefonoErr.setText("Teléfono inválido (6-15 dígitos)");
+                    telefonoErr.setVisible(true);
+                    if (valido) { telefono.requestFocus(); }
+                    valido = false;
+                }
             }
 
             if (!valido) {
@@ -469,11 +514,11 @@ public class PedidosPanel extends JPanel {
                 continue;
             }
 
-            // enviar al controlador
-            return controller.procesarPagoYGenerarComprobante(pedido.getCodigo(), metodo.getSelectedItem().toString(), tipoValor,
+                // enviar al controlador
+                return controller.procesarPagoYGenerarComprobante(pedido.getCodigo(), metodo.getSelectedItem().toString(), tipoValor,
                     // Para Boleta simple dejamos vacío (sin datos de cliente)
                     "Boleta simple".equals(tipoVisible) ? "" : nombre.getText(),
-                    dni.getText(), ruc.getText(), razon.getText(), direccion.getText(),
+                    dni.getText(), ruc.getText(), razon.getText(), direccion.getText(), email.getText(), telefono.getText(),
                     new File("reportes/comprobantes"));
         }
     }

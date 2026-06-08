@@ -16,11 +16,17 @@ public class Comprobante {
     private String ruc;
     private String razonSocial;
     private String direccion;
+    private String email;
+    private String telefono;
     private String archivoPdf;
     private Date fecha;
-
     public Comprobante(int idComprobante, int idPedido, String tipo, String numero, String clienteNombre,
             String dni, String ruc, String razonSocial, String direccion, String archivoPdf, Date fecha) {
+        this(idComprobante, idPedido, tipo, numero, clienteNombre, dni, ruc, razonSocial, direccion, null, null, archivoPdf, fecha);
+    }
+
+    public Comprobante(int idComprobante, int idPedido, String tipo, String numero, String clienteNombre,
+            String dni, String ruc, String razonSocial, String direccion, String email, String telefono, String archivoPdf, Date fecha) {
         this.idComprobante = idComprobante;
         this.idPedido = idPedido;
         this.tipo = tipo;
@@ -30,6 +36,8 @@ public class Comprobante {
         this.ruc = ruc;
         this.razonSocial = razonSocial;
         this.direccion = direccion;
+        this.email = email;
+        this.telefono = telefono;
         this.archivoPdf = archivoPdf;
         this.fecha = fecha;
     }
@@ -68,6 +76,14 @@ public class Comprobante {
 
     public String getDireccion() {
         return direccion;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getTelefono() {
+        return telefono;
     }
 
     public String getArchivoPdf() {

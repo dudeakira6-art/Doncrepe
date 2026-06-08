@@ -128,7 +128,7 @@ public class PedidosController {
     }
 
     public ResultadoComprobante procesarPagoYGenerarComprobante(String codigo, String metodoPago, String tipoComprobante,
-            String clienteNombre, String dni, String ruc, String razonSocial, String direccion, File carpetaComprobantes)
+            String clienteNombre, String dni, String ruc, String razonSocial, String direccion, String email, String telefono, File carpetaComprobantes)
             throws SQLException, IOException {
         if (StringUtils.isBlank(codigo)) {
             throw new IllegalArgumentException("Seleccione un pedido para pagar.");
@@ -136,7 +136,7 @@ public class PedidosController {
         if (!"Efectivo".equals(metodoPago) && !"Tarjeta".equals(metodoPago) && !"Yape".equals(metodoPago)) {
             throw new IllegalArgumentException("Seleccione un método de pago válido.");
         }
-        validarDatosComprobante(tipoComprobante, clienteNombre, dni, ruc, razonSocial, direccion);
+        validarDatosComprobante(tipoComprobante, clienteNombre, dni, ruc, razonSocial, direccion, email, telefono);
         Pedido pedidoActual = pedidoDAO.buscarPorCodigo(codigo);
         if (pedidoActual == null) {
             throw new IllegalArgumentException("El pedido seleccionado ya no existe.");
@@ -144,7 +144,7 @@ public class PedidosController {
         if ("COMPLETADO".equalsIgnoreCase(pedidoActual.getEstado())) {
             throw new IllegalArgumentException("El pedido ya fue pagado.");
         }
-        Comprobante comprobante = construirComprobante(pedidoActual, tipoComprobante, clienteNombre, dni, ruc, razonSocial, direccion, carpetaComprobantes);
+        Comprobante comprobante = construirComprobante(pedidoActual, tipoComprobante, clienteNombre, dni, ruc, razonSocial, direccion, email, telefono, carpetaComprobantes);
         List<DetallePedido> detalles = pedidoDAO.listarDetalles(codigo);
         Pedido pedidoParaComprobante = new Pedido(
                 pedidoActual.getIdPedido(),
@@ -168,7 +168,7 @@ public class PedidosController {
         return new ResultadoComprobante(pedidoPagado, detalles, comprobante, pdf);
     }
 
-    public void validarDatosComprobante(String tipo, String clienteNombre, String dni, String ruc, String razonSocial, String direccion) {
+    public void validarDatosComprobante(String tipo, String clienteNombre, String dni, String ruc, String razonSocial, String direccion, String email, String telefono) {
         if (StringUtils.isBlank(tipo)) {
             throw new IllegalArgumentException("Seleccione el tipo de comprobante.");
         }
@@ -185,6 +185,12 @@ public class PedidosController {
             }
             if (StringUtils.isBlank(razonSocial) || StringUtils.isBlank(direccion)) {
                 throw new IllegalArgumentException("Ingrese razón social y dirección para la factura.");
+            }
+            if (StringUtils.isBlank(email) || !email.matches("[^@\\s]+@[^@\\s]+\\.[^@\\s]+")) {
+                throw new IllegalArgumentException("Ingrese un email válido para la factura.");
+            }
+            if (!StringUtils.defaultString(telefono).matches("\\d{6,15}")) {
+                throw new IllegalArgumentException("Ingrese un teléfono válido para la factura (6-15 dígitos).");
             }
         } else if (!Comprobante.BOLETA_SIMPLE.equals(tipo)) {
             throw new IllegalArgumentException("Tipo de comprobante no válido.");
@@ -219,7 +225,7 @@ public class PedidosController {
     }
 
     private Comprobante construirComprobante(Pedido pedido, String tipo, String clienteNombre, String dni,
-            String ruc, String razonSocial, String direccion, File carpetaComprobantes) {
+            String ruc, String razonSocial, String direccion, String email, String telefono, File carpetaComprobantes) {
         String numero = (Comprobante.FACTURA.equals(tipo) ? "F001-" : "B001-") + System.currentTimeMillis();
         String archivo = new File(carpetaComprobantes, numero + ".pdf").getPath();
         String nombre = StringUtils.defaultIfBlank(clienteNombre, pedido.getCliente());
@@ -229,6 +235,6 @@ public class PedidosController {
         }
         return new Comprobante(0, pedido.getIdPedido(), tipo, numero, nombre.trim(), StringUtils.trimToEmpty(dni),
                 StringUtils.trimToEmpty(ruc), StringUtils.trimToEmpty(razonSocial), StringUtils.trimToEmpty(direccion),
-                archivo, new java.util.Date());
+                StringUtils.trimToEmpty(email), StringUtils.trimToEmpty(telefono), archivo, new java.util.Date());
     }
 }
