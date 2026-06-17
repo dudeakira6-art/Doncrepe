@@ -31,6 +31,8 @@ public class PruebasTDD {
         pruebas.debeExportarCajaConApachePOI();
         pruebas.debeGenerarComprobantePdf();
         pruebas.debeValidarDatosDeFactura();
+        pruebas.debePermitirBoletaSimpleSinDatos();
+        pruebas.debeRequerirNombreYDniParaBoletaDni();
         System.out.println("TDD OK - pruebas ejecutadas: " + pruebas.pruebasEjecutadas);
     }
 
@@ -146,6 +148,32 @@ public class PruebasTDD {
         }
     }
 
+    private void debePermitirBoletaSimpleSinDatos() {
+        PedidosController controller = new PedidosController(null, null, null, new CalculadoraPedido());
+        try {
+            controller.validarDatosComprobante(Comprobante.BOLETA_SIMPLE, "", "", "", "", "");
+            assertTrue(true, "La boleta simple no debe exigir datos del cliente.");
+        } catch (Exception ex) {
+            throw new AssertionError("La boleta simple no debía exigir datos: " + ex.getMessage());
+        }
+    }
+
+    private void debeRequerirNombreYDniParaBoletaDni() {
+        PedidosController controller = new PedidosController(null, null, null, new CalculadoraPedido());
+        try {
+            controller.validarDatosComprobante(Comprobante.BOLETA_DNI, "", "12345678", "", "", "");
+            throw new AssertionError("Se esperaba error por nombre faltante en boleta con DNI.");
+        } catch (IllegalArgumentException ex) {
+            assertTrue(ex.getMessage().contains("nombre"), "La boleta con DNI debe exigir nombre.");
+        }
+        try {
+            controller.validarDatosComprobante(Comprobante.BOLETA_DNI, "Cliente TDD", "123", "", "", "");
+            throw new AssertionError("Se esperaba error por DNI invalido en boleta con DNI.");
+        } catch (IllegalArgumentException ex) {
+            assertTrue(ex.getMessage().contains("DNI"), "La boleta con DNI debe exigir DNI de 8 digitos.");
+        }
+    }
+
     private void assertDouble(double esperado, double actual, String mensaje) {
         pruebasEjecutadas++;
         if (Math.abs(esperado - actual) > 0.01) {
@@ -160,3 +188,4 @@ public class PruebasTDD {
         }
     }
 }
+

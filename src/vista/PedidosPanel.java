@@ -2,6 +2,7 @@ package vista;
 
 import controlador.PedidosController;
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
@@ -40,7 +41,7 @@ public class PedidosPanel extends JPanel {
     private final Usuario usuario;
     private final Runnable alGuardar;
     private final PedidosController controller = new PedidosController();
-    private final DefaultTableModel model = new DefaultTableModel(new Object[]{"Pedido", "Cliente", "Mesa", "Total", "Método de Pago", "Estado"}, 0);
+    private final DefaultTableModel model = new DefaultTableModel(new Object[]{"Pedido", "Cliente", "Mesa", "Total", "MÃ©todo de Pago", "Estado"}, 0);
     private JTable tablaPedidos;
     private JButton btnComprobante;
 
@@ -110,7 +111,7 @@ public class PedidosPanel extends JPanel {
                 model.addRow(new Object[]{p.getCodigo(), p.getCliente(), mesa, "S/ " + String.format("%.2f", p.getTotal()), p.getMetodoPago(), p.getEstado()});
             }
         } catch (Exception ex) {
-            model.addRow(new Object[]{"Sin conexión", ex.getMessage(), "", "", "", ""});
+            model.addRow(new Object[]{"Sin conexiÃ³n", ex.getMessage(), "", "", "", ""});
         }
         actualizarBotonComprobante();
     }
@@ -156,8 +157,8 @@ public class PedidosPanel extends JPanel {
             total.setForeground(Estilos.ROSA_NEON);
 
             JTabbedPane tabs = new JTabbedPane();
-            tabs.add("Crepés dulces", crearTabProductos(productos, "dulce", cantidad, detalles, detalleModel, total));
-            tabs.add("Crepés salados", crearTabProductos(productos, "salado", cantidad, detalles, detalleModel, total));
+            tabs.add("CrepÃ©s dulces", crearTabProductos(productos, "dulce", cantidad, detalles, detalleModel, total));
+            tabs.add("CrepÃ©s salados", crearTabProductos(productos, "salado", cantidad, detalles, detalleModel, total));
             tabs.add("Bebidas", crearTabProductos(productos, "bebida", cantidad, detalles, detalleModel, total));
 
             RoundedPanel panel = new RoundedPanel(18, Estilos.BLANCO, false);
@@ -265,39 +266,52 @@ public class PedidosPanel extends JPanel {
     private ResultadoComprobante mostrarDialogoPago(Pedido pedido, List<DetallePedido> detalles) throws Exception {
         JComboBox<String> metodo = new JComboBox<String>(new String[]{"Efectivo", "Tarjeta", "Yape"});
         JComboBox<String> tipo = new JComboBox<String>(new String[]{"Boleta simple", "Boleta con DNI", "Factura"});
-        JTextField nombre = new JTextField(pedido.getCliente());
-        JTextField dni = new JTextField();
-        JTextField ruc = new JTextField();
-        JTextField razon = new JTextField();
-        JTextField direccion = new JTextField();
         JCheckBox confirmado = new JCheckBox("Confirmo que el pago fue recibido/aprobado");
         confirmado.setOpaque(false);
         JLabel qr = new JLabel(Recursos.imagen("Código_QR.jpg", 160, 160));
         qr.setVisible(false);
 
+        JTextField nombreBoleta = new JTextField(pedido.getCliente());
+        JTextField dniBoleta = new JTextField();
+        JTextField nombreFactura = new JTextField(pedido.getCliente());
+        JTextField rucFactura = new JTextField();
+        JTextField razonFactura = new JTextField();
+        JTextField direccionFactura = new JTextField();
+
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        JPanel campos = new JPanel(new GridLayout(0, 2, 8, 8));
-        campos.add(labelFormulario("Método de pago"));
-        campos.add(metodo);
-        campos.add(labelFormulario("Comprobante"));
-        campos.add(tipo);
-        campos.add(labelFormulario("Nombre"));
-        campos.add(nombre);
-        campos.add(labelFormulario("DNI"));
-        campos.add(dni);
-        campos.add(labelFormulario("RUC"));
-        campos.add(ruc);
-        campos.add(labelFormulario("Razón social"));
-        campos.add(razon);
-        campos.add(labelFormulario("Dirección"));
-        campos.add(direccion);
-        campos.add(new JLabel(""));
-        campos.add(confirmado);
-        panel.add(campos, BorderLayout.CENTER);
+        JPanel superior = new JPanel(new GridLayout(0, 2, 8, 8));
+        superior.add(labelFormulario("Método de pago"));
+        superior.add(metodo);
+        superior.add(labelFormulario("Comprobante"));
+        superior.add(tipo);
+
+        JLabel ayuda = new JLabel("Boleta simple: no requiere datos del cliente.");
+        ayuda.setForeground(Estilos.TEXTO_SUAVE);
+        ayuda.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+
+        CardLayout tarjetasLayout = new CardLayout();
+        JPanel tarjetas = new JPanel(tarjetasLayout);
+        tarjetas.setOpaque(false);
+        tarjetas.add(crearTarjetaBoletaSimple(ayuda), Comprobante.BOLETA_SIMPLE);
+        tarjetas.add(crearTarjetaBoletaDni(nombreBoleta, dniBoleta), Comprobante.BOLETA_DNI);
+        tarjetas.add(crearTarjetaFactura(nombreFactura, rucFactura, razonFactura, direccionFactura), Comprobante.FACTURA);
+        tarjetasLayout.show(tarjetas, Comprobante.BOLETA_SIMPLE);
+
+        JPanel centro = new JPanel(new BorderLayout(0, 10));
+        centro.setOpaque(false);
+        centro.add(superior, BorderLayout.NORTH);
+        centro.add(tarjetas, BorderLayout.CENTER);
+        centro.add(confirmado, BorderLayout.SOUTH);
+        panel.add(centro, BorderLayout.CENTER);
         panel.add(qr, BorderLayout.EAST);
         metodo.addActionListener(e -> {
             qr.setVisible("Yape".equals(metodo.getSelectedItem()));
+            panel.revalidate();
+            panel.repaint();
+        });
+        tipo.addActionListener(e -> {
+            tarjetasLayout.show(tarjetas, tipoComprobante(tipo.getSelectedItem().toString()));
             panel.revalidate();
             panel.repaint();
         });
@@ -310,9 +324,55 @@ public class PedidosPanel extends JPanel {
             throw new IllegalArgumentException("Debe confirmar que el pago fue recibido o aprobado.");
         }
         String tipoValor = tipoComprobante(tipo.getSelectedItem().toString());
+        if (Comprobante.BOLETA_SIMPLE.equals(tipoValor)) {
+            return controller.procesarPagoYGenerarComprobante(pedido.getCodigo(), metodo.getSelectedItem().toString(), tipoValor,
+                    "", "", "", "", "", new File("reportes/comprobantes"));
+        }
+        if (Comprobante.BOLETA_DNI.equals(tipoValor)) {
+            return controller.procesarPagoYGenerarComprobante(pedido.getCodigo(), metodo.getSelectedItem().toString(), tipoValor,
+                    nombreBoleta.getText(), dniBoleta.getText(), "", "", "", new File("reportes/comprobantes"));
+        }
         return controller.procesarPagoYGenerarComprobante(pedido.getCodigo(), metodo.getSelectedItem().toString(), tipoValor,
-                nombre.getText(), dni.getText(), ruc.getText(), razon.getText(), direccion.getText(),
+                nombreFactura.getText(), "", rucFactura.getText(), razonFactura.getText(), direccionFactura.getText(),
                 new File("reportes/comprobantes"));
+    }
+
+    private JPanel crearTarjetaBoletaSimple(JLabel ayuda) {
+        RoundedPanel panel = new RoundedPanel(18, Estilos.FONDO_SUAVE, true);
+        panel.setBorder(BorderFactory.createEmptyBorder(18, 18, 18, 18));
+        panel.setLayout(new BorderLayout());
+        JLabel titulo = new JLabel("Boleta simple");
+        titulo.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        titulo.setForeground(Estilos.ROSA_NEON);
+        panel.add(titulo, BorderLayout.NORTH);
+        panel.add(ayuda, BorderLayout.CENTER);
+        return panel;
+    }
+
+    private JPanel crearTarjetaBoletaDni(JTextField nombre, JTextField dni) {
+        RoundedPanel panel = new RoundedPanel(18, Estilos.FONDO_SUAVE, true);
+        panel.setBorder(BorderFactory.createEmptyBorder(18, 18, 18, 18));
+        panel.setLayout(new GridLayout(0, 2, 8, 8));
+        panel.add(labelFormulario("Nombre"));
+        panel.add(nombre);
+        panel.add(labelFormulario("DNI"));
+        panel.add(dni);
+        return panel;
+    }
+
+    private JPanel crearTarjetaFactura(JTextField nombre, JTextField ruc, JTextField razon, JTextField direccion) {
+        RoundedPanel panel = new RoundedPanel(18, Estilos.FONDO_SUAVE, true);
+        panel.setBorder(BorderFactory.createEmptyBorder(18, 18, 18, 18));
+        panel.setLayout(new GridLayout(0, 2, 8, 8));
+        panel.add(labelFormulario("Nombre"));
+        panel.add(nombre);
+        panel.add(labelFormulario("RUC"));
+        panel.add(ruc);
+        panel.add(labelFormulario("Razón social"));
+        panel.add(razon);
+        panel.add(labelFormulario("Dirección"));
+        panel.add(direccion);
+        return panel;
     }
 
     private void verComprobanteSeleccionado() {
@@ -324,7 +384,7 @@ public class PedidosPanel extends JPanel {
         String codigo = tablaPedidos.getValueAt(fila, 0).toString();
         String estado = tablaPedidos.getValueAt(fila, 5).toString();
         if (!"COMPLETADO".equalsIgnoreCase(estado)) {
-            mensaje("El pedido todavía no tiene comprobante porque está pendiente.");
+            mensaje("El pedido todavÃ­a no tiene comprobante porque estÃ¡ pendiente.");
             return;
         }
         try {
@@ -381,7 +441,7 @@ public class PedidosPanel extends JPanel {
             return;
         }
         String codigo = tablaPedidos.getValueAt(fila, 0).toString();
-        int ok = JOptionPane.showConfirmDialog(this, "¿Eliminar el pedido " + codigo + "?", "Confirmar", JOptionPane.YES_NO_OPTION);
+        int ok = JOptionPane.showConfirmDialog(this, "Â¿Eliminar el pedido " + codigo + "?", "Confirmar", JOptionPane.YES_NO_OPTION);
         if (ok != JOptionPane.YES_OPTION) {
             return;
         }
@@ -417,7 +477,7 @@ public class PedidosPanel extends JPanel {
     }
 
     private void mensaje(String texto) {
-        JOptionPane.showMessageDialog(this, panelMensaje(texto, false), "Don Crepé", JOptionPane.PLAIN_MESSAGE);
+        JOptionPane.showMessageDialog(this, panelMensaje(texto, false), "Don CrepÃ©", JOptionPane.PLAIN_MESSAGE);
     }
 
     private void mensajeError(String texto) {
@@ -460,3 +520,6 @@ public class PedidosPanel extends JPanel {
         }
     }
 }
+
+
+

@@ -50,22 +50,25 @@ public class ComprobanteService {
 
     private List<String> construirLineas(Pedido pedido, List<DetallePedido> detalles, Comprobante comprobante) {
         List<String> lineas = new ArrayList<String>();
-        lineas.add("DON CREPÉ");
+        lineas.add("DON CREPÃ‰");
         lineas.add(comprobante.getNombreVisible().toUpperCase() + "  " + comprobante.getNumero());
         lineas.add("Pedido: " + pedido.getCodigo());
         lineas.add("Fecha: " + formatoFecha.format(pedido.getFecha()));
-        lineas.add("Atención: " + (pedido.getMesaNumero() == 0 ? "Delivery" : "Mesa " + pedido.getMesaNumero()));
-        lineas.add("Método de pago: " + pedido.getMetodoPago());
+        lineas.add("AtenciÃ³n: " + (pedido.getMesaNumero() == 0 ? "Delivery" : "Mesa " + pedido.getMesaNumero()));
+        lineas.add("MÃ©todo de pago: " + pedido.getMetodoPago());
         lineas.add("");
         if (Comprobante.FACTURA.equals(comprobante.getTipo())) {
+            if (comprobante.getClienteNombre() != null && !comprobante.getClienteNombre().trim().isEmpty()) {
+                lineas.add("Cliente: " + comprobante.getClienteNombre());
+            }
             lineas.add("RUC: " + comprobante.getRuc());
             lineas.add("Razón social: " + comprobante.getRazonSocial());
             lineas.add("Dirección: " + comprobante.getDireccion());
-        } else {
+        } else if (Comprobante.BOLETA_DNI.equals(comprobante.getTipo())) {
             lineas.add("Cliente: " + comprobante.getClienteNombre());
-            if (Comprobante.BOLETA_DNI.equals(comprobante.getTipo())) {
-                lineas.add("DNI: " + comprobante.getDni());
-            }
+            lineas.add("DNI: " + comprobante.getDni());
+        } else {
+            lineas.add("Cliente: Consumidor final");
         }
         lineas.add("");
         lineas.add(String.format("%-24s %5s %10s", "Producto", "Cant.", "Subtotal"));
@@ -102,18 +105,18 @@ public class ComprobanteService {
         if (texto == null) {
             return "";
         }
-        return texto.replace("é", "e")
-                .replace("É", "E")
-                .replace("á", "a")
-                .replace("Á", "A")
-                .replace("í", "i")
-                .replace("Í", "I")
-                .replace("ó", "o")
-                .replace("Ó", "O")
-                .replace("ú", "u")
-                .replace("Ú", "U")
-                .replace("ñ", "n")
-                .replace("Ñ", "N");
+        return texto.replace("Ã©", "e")
+                .replace("Ã‰", "E")
+                .replace("Ã¡", "a")
+                .replace("Ã", "A")
+                .replace("Ã­", "i")
+                .replace("Ã", "I")
+                .replace("Ã³", "o")
+                .replace("Ã“", "O")
+                .replace("Ãº", "u")
+                .replace("Ãš", "U")
+                .replace("Ã±", "n")
+                .replace("Ã‘", "N");
     }
 
     private String recortar(String texto, int maximo) {
