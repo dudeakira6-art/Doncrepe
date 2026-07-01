@@ -24,9 +24,12 @@ jobs:
           java-version: "17"
 
       - name: Compile project
-        run: ant -noinput compile
+        run: ant -noinput compile-tests
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v7
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.verbose=true
