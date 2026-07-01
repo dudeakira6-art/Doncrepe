@@ -2,6 +2,7 @@ package servicio;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,20 +51,20 @@ public class ComprobanteService {
 
     private List<String> construirLineas(Pedido pedido, List<DetallePedido> detalles, Comprobante comprobante) {
         List<String> lineas = new ArrayList<String>();
-        lineas.add("DON CREPÉ");
+        lineas.add("DON CREPE");
         lineas.add(comprobante.getNombreVisible().toUpperCase() + "  " + comprobante.getNumero());
         lineas.add("Pedido: " + pedido.getCodigo());
         lineas.add("Fecha: " + formatoFecha.format(pedido.getFecha()));
-        lineas.add("Atención: " + (pedido.getMesaNumero() == 0 ? "Delivery" : "Mesa " + pedido.getMesaNumero()));
-        lineas.add("Método de pago: " + pedido.getMetodoPago());
+        lineas.add("Atencion: " + (pedido.getMesaNumero() == 0 ? "Delivery" : "Mesa " + pedido.getMesaNumero()));
+        lineas.add("Metodo de pago: " + pedido.getMetodoPago());
         lineas.add("");
         if (Comprobante.FACTURA.equals(comprobante.getTipo())) {
             if (comprobante.getClienteNombre() != null && !comprobante.getClienteNombre().trim().isEmpty()) {
                 lineas.add("Cliente: " + comprobante.getClienteNombre());
             }
             lineas.add("RUC: " + comprobante.getRuc());
-            lineas.add("Razón social: " + comprobante.getRazonSocial());
-            lineas.add("Dirección: " + comprobante.getDireccion());
+            lineas.add("Razon social: " + comprobante.getRazonSocial());
+            lineas.add("Direccion: " + comprobante.getDireccion());
         } else if (Comprobante.BOLETA_DNI.equals(comprobante.getTipo())) {
             lineas.add("Cliente: " + comprobante.getClienteNombre());
             lineas.add("DNI: " + comprobante.getDni());
@@ -105,18 +106,8 @@ public class ComprobanteService {
         if (texto == null) {
             return "";
         }
-        return texto.replace("Ã©", "e")
-                .replace("Ã‰", "E")
-                .replace("Ã¡", "a")
-                .replace("Ã", "A")
-                .replace("Ã­", "i")
-                .replace("Ã", "I")
-                .replace("Ã³", "o")
-                .replace("Ã“", "O")
-                .replace("Ãº", "u")
-                .replace("Ãš", "U")
-                .replace("Ã±", "n")
-                .replace("Ã‘", "N");
+        String normalizado = Normalizer.normalize(texto, Normalizer.Form.NFD);
+        return normalizado.replaceAll("\\p{M}", "");
     }
 
     private String recortar(String texto, int maximo) {
