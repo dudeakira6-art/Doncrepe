@@ -37,7 +37,7 @@ public class NeonIcon implements Icon {
 
     @Override
     public int getIconHeight() {
-        return size;
+        return getIconWidth();
     }
 
     @Override

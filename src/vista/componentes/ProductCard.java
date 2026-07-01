@@ -12,7 +12,7 @@ import modelo.Producto;
 import vista.Estilos;
 
 public class ProductCard extends RoundedPanel {
-    private final Producto producto;
+    private transient final Producto producto;
 
     public ProductCard(Producto producto) {
         super(22, Estilos.BLANCO, true);

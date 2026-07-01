@@ -9,6 +9,8 @@ import java.util.List;
 import modelo.Mesa;
 
 public class MesasController {
+    private static final String LIBRE = "LIBRE";
+    private static final String OCUPADO = "OCUPADO";
     private final IMesaDAO mesaDAO;
     private final IPedidoDAO pedidoDAO;
 
@@ -30,8 +32,8 @@ public class MesasController {
     }
 
     public String alternarEstado(Mesa mesa) throws SQLException {
-        String nuevo = "LIBRE".equalsIgnoreCase(mesa.getEstado()) ? "OCUPADO" : "LIBRE";
-        if ("LIBRE".equals(nuevo) && pedidoDAO.existePedidoPendienteMesa(mesa.getIdMesa())) {
+        String nuevo = LIBRE.equalsIgnoreCase(mesa.getEstado()) ? OCUPADO : LIBRE;
+        if (LIBRE.equals(nuevo) && pedidoDAO.existePedidoPendienteMesa(mesa.getIdMesa())) {
             throw new IllegalArgumentException("La mesa tiene un pedido pendiente. Primero complete o elimine el pedido.");
         }
         mesaDAO.cambiarEstado(mesa.getIdMesa(), nuevo);

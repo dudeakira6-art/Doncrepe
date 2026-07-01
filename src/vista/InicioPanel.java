@@ -9,8 +9,10 @@ import java.awt.Font;
 import java.awt.Cursor;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.function.Consumer;
 import javax.swing.BorderFactory;
@@ -25,9 +27,11 @@ import vista.componentes.NeonIcon;
 import vista.componentes.RoundedPanel;
 
 public class InicioPanel extends JPanel {
-    private final Usuario usuario;
-    private final Consumer<String> navegar;
-    private final InicioController controller = new InicioController();
+    private transient final Usuario usuario;
+    private transient final Consumer<String> navegar;
+    private transient final InicioController controller = new InicioController();
+    private static final DateTimeFormatter FECHA_CABECERA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter FECHA_ACTIVIDAD = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     public InicioPanel(Usuario usuario) {
         this(usuario, null);
@@ -48,7 +52,7 @@ public class InicioPanel extends JPanel {
         JLabel saludo = new JLabel("Bienvenido, " + usuario.getNombre() + "!");
         saludo.setFont(Estilos.fuenteTitulo());
         saludo.setForeground(Estilos.TEXTO);
-        JLabel fecha = new JLabel(new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
+        JLabel fecha = new JLabel(LocalDate.now().format(FECHA_CABECERA));
         fecha.setOpaque(true);
         fecha.setForeground(Estilos.ROSA_NEON);
         fecha.setBackground(Estilos.BLANCO);
@@ -160,10 +164,9 @@ public class InicioPanel extends JPanel {
         DefaultTableModel model = new DefaultTableModel(new Object[]{"Pedido", "Mesa", "Fecha", "Total", "Estado"}, 0);
         try {
             List<Pedido> pedidos = controller.actividadReciente();
-            SimpleDateFormat fmt = new SimpleDateFormat("dd/MM/yyyy HH:mm");
             for (Pedido p : pedidos) {
                 String mesa = p.getMesaNumero() == 0 ? "Delivery" : "Mesa " + p.getMesaNumero();
-                model.addRow(new Object[]{p.getCodigo(), mesa, fmt.format(p.getFecha()), "S/ " + String.format("%.2f", p.getTotal()), p.getEstado()});
+                model.addRow(new Object[]{p.getCodigo(), mesa, formatearFecha(p.getFecha()), "S/ " + String.format("%.2f", p.getTotal()), p.getEstado()});
             }
         } catch (Exception ex) {
             model.addRow(new Object[]{"Sin conexion a MySQL", "-", "-", "-", ex.getMessage()});
@@ -174,5 +177,15 @@ public class InicioPanel extends JPanel {
         scroll.setBorder(BorderFactory.createTitledBorder(Estilos.bordeRosa(), "Actividad Reciente"));
         scroll.getViewport().setBackground(Estilos.BLANCO);
         return scroll;
+    }
+
+    private String formatearFecha(java.util.Date fecha) {
+        if (fecha == null) {
+            return "-";
+        }
+        return Instant.ofEpochMilli(fecha.getTime())
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime()
+                .format(FECHA_ACTIVIDAD);
     }
 }

@@ -22,8 +22,17 @@ public class MesaCard extends RoundedPanel {
         estado.setHorizontalAlignment(SwingConstants.CENTER);
         estado.setOpaque(true);
         boolean libre = "LIBRE".equalsIgnoreCase(mesa.getEstado());
-        estado.setBackground(libre ? new Color(217, 255, 232) : new Color(255, 224, 234));
-        estado.setForeground(libre ? Estilos.VERDE : Estilos.ROJO);
+        Color fondoEstado;
+        Color textoEstado;
+        if (libre) {
+            fondoEstado = new Color(217, 255, 232);
+            textoEstado = Estilos.VERDE;
+        } else {
+            fondoEstado = new Color(255, 224, 234);
+            textoEstado = Estilos.ROJO;
+        }
+        estado.setBackground(fondoEstado);
+        estado.setForeground(textoEstado);
         estado.setBorder(BorderFactory.createEmptyBorder(5, 8, 5, 8));
         estado.setFont(new Font("Segoe UI", Font.BOLD, 12));
 

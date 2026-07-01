@@ -26,16 +26,14 @@ public class WrapLayout extends FlowLayout {
 
     private Dimension layoutSize(Container target) {
         synchronized (target.getTreeLock()) {
-            int targetWidth = target.getWidth();
-            if (targetWidth == 0) {
-                targetWidth = Integer.MAX_VALUE;
-            }
-
             Container container = target;
             while (container.getSize().width == 0 && container.getParent() != null) {
                 container = container.getParent();
             }
-            targetWidth = container.getSize().width;
+            int targetWidth = container.getSize().width;
+            if (targetWidth == 0) {
+                targetWidth = Integer.MAX_VALUE;
+            }
 
             if (target.getParent() instanceof JScrollPane) {
                 targetWidth -= getHgap() + 10;

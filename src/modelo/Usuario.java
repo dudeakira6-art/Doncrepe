@@ -3,13 +3,13 @@ package modelo;
 public class Usuario {
     private int idUsuario;
     private String nombre;
-    private String usuario;
+    private String nombreUsuario;
     private String rol;
 
     public Usuario(int idUsuario, String nombre, String usuario, String rol) {
         this.idUsuario = idUsuario;
         this.nombre = nombre;
-        this.usuario = usuario;
+        this.nombreUsuario = usuario;
         this.rol = rol;
     }
 
@@ -22,7 +22,7 @@ public class Usuario {
     }
 
     public String getUsuario() {
-        return usuario;
+        return nombreUsuario;
     }
 
     public String getRol() {

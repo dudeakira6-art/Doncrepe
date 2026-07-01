@@ -120,26 +120,35 @@ public class MenuLateral extends JPanel {
     }
 
     private javax.swing.Icon iconoMenu(String tipo, boolean rosa) {
-        String archivo;
-        if (NeonIcon.HOME.equals(tipo)) {
-            archivo = rosa ? "icon_homepink.png" : "icon_home.png";
-        } else if (NeonIcon.TABLE.equals(tipo)) {
-            archivo = rosa ? "icon_tablepink.png" : "icon_table.png";
-        } else if (NeonIcon.ORDER.equals(tipo)) {
-            archivo = rosa ? "icon_orderpink.png" : "icon_order.png";
-        } else if (NeonIcon.PRODUCT.equals(tipo)) {
-            archivo = rosa ? "icon_productpink.png" : "icon_product.png";
-        } else if (NeonIcon.CASH.equals(tipo)) {
-            archivo = rosa ? "icon_cashpink.png" : "icon_cash.png";
-        } else {
-            archivo = "icon_logout.png";
-        }
+        String archivo = iconoArchivo(tipo, rosa);
         ImageIcon icon = Recursos.icono(archivo, 20);
-        return icon != null ? icon : new NeonIcon(tipo, 20, rosa ? Estilos.ROSA_NEON : Estilos.TEXTO);
+        if (icon != null) {
+            return icon;
+        }
+        return new NeonIcon(tipo, 20, rosa ? Estilos.ROSA_NEON : Estilos.TEXTO);
     }
 
     private javax.swing.Icon iconoMenu(String tipo, Color color) {
         return iconoMenu(tipo, Estilos.ROSA_NEON.equals(color));
+    }
+
+    private String iconoArchivo(String tipo, boolean rosa) {
+        if (NeonIcon.HOME.equals(tipo)) {
+            return rosa ? "icon_homepink.png" : "icon_home.png";
+        }
+        if (NeonIcon.TABLE.equals(tipo)) {
+            return rosa ? "icon_tablepink.png" : "icon_table.png";
+        }
+        if (NeonIcon.ORDER.equals(tipo)) {
+            return rosa ? "icon_orderpink.png" : "icon_order.png";
+        }
+        if (NeonIcon.PRODUCT.equals(tipo)) {
+            return rosa ? "icon_productpink.png" : "icon_product.png";
+        }
+        if (NeonIcon.CASH.equals(tipo)) {
+            return rosa ? "icon_cashpink.png" : "icon_cash.png";
+        }
+        return "icon_logout.png";
     }
 
     @Override

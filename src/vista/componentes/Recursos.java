@@ -2,6 +2,8 @@ package vista.componentes;
 
 import java.awt.Image;
 import java.net.URL;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.swing.ImageIcon;
 import org.apache.commons.lang3.StringUtils;
 
@@ -35,55 +37,44 @@ public final class Recursos {
             return imagenGuardada.trim();
         }
         String nombre = StringUtils.stripAccents(StringUtils.lowerCase(StringUtils.trimToEmpty(nombreProducto)));
-        if (nombre.contains("fresa")) {
-            return "Crepé de Fresa.png";
-        }
-        if (nombre.contains("nutella")) {
-            return "Crepe de Nutella.png";
-        }
-        if (nombre.contains("platano") || nombre.contains("banana")) {
-            return "Crepe platano.png";
-        }
-        if (nombre.contains("dulce") || nombre.contains("leche")) {
-            return "Crepe Dulce de Leche.png";
-        }
-        if (nombre.contains("arandano")) {
-            return "Crepé de Arándanos.png";
-        }
-        if (nombre.contains("jamon") || nombre.contains("queso")) {
-            return "Crepe Jamón y Queso.png";
-        }
-        if (nombre.contains("pollo")) {
-            return "Crepé de Pollo.png";
-        }
-        if (nombre.contains("champinon")) {
-            return "Crepé de Champiñones.png";
-        }
-        if (nombre.contains("vegetar")) {
-            return "Crep+e Vegetariano.png";
-        }
-        if (nombre.contains("huevo")) {
-            return "Crepé de Huevo.png";
-        }
-        if (nombre.contains("cafe")) {
-            return "cafe.png";
-        }
-        if (nombre.contains("frappe")) {
-            return "Frapuccino.png";
-        }
-        if (nombre.contains("naranja") || nombre.contains("jugo")) {
-            return "Jugo de Naranja.png";
-        }
-        if (nombre.contains("batido") || nombre.contains("smoothie") || nombre.contains("fruta")) {
-            return "Jugo de Frutas.png";
-        }
-        if (nombre.contains("coca") || nombre.contains("cola")) {
-            return "Coca Cola.png";
+        for (Map.Entry<String, String> entrada : imagenesPorClave().entrySet()) {
+            if (contieneAlgunaClave(nombre, entrada.getKey())) {
+                return entrada.getValue();
+            }
         }
         return "";
     }
 
     public static boolean existe(String nombre) {
         return StringUtils.isNotBlank(nombre) && Recursos.class.getResource("/resources/img/" + nombre) != null;
+    }
+
+    private static Map<String, String> imagenesPorClave() {
+        Map<String, String> imagenes = new LinkedHashMap<String, String>();
+        imagenes.put("fresa", "Crepé de Fresa.png");
+        imagenes.put("nutella", "Crepe de Nutella.png");
+        imagenes.put("platano|banana", "Crepe platano.png");
+        imagenes.put("dulce|leche", "Crepe Dulce de Leche.png");
+        imagenes.put("arandano", "Crepé de Arándanos.png");
+        imagenes.put("jamon|queso", "Crepe Jamón y Queso.png");
+        imagenes.put("pollo", "Crepé de Pollo.png");
+        imagenes.put("champinon", "Crepé de Champiñones.png");
+        imagenes.put("vegetar", "Crep+e Vegetariano.png");
+        imagenes.put("huevo", "Crepé de Huevo.png");
+        imagenes.put("cafe", "cafe.png");
+        imagenes.put("frappe", "Frapuccino.png");
+        imagenes.put("naranja|jugo", "Jugo de Naranja.png");
+        imagenes.put("batido|smoothie|fruta", "Jugo de Frutas.png");
+        imagenes.put("coca|cola", "Coca Cola.png");
+        return imagenes;
+    }
+
+    private static boolean contieneAlgunaClave(String texto, String claves) {
+        for (String clave : claves.split("\\|")) {
+            if (texto.contains(clave)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -19,7 +19,7 @@ public final class SeguridadPassword {
             }
             return sb.toString();
         } catch (NoSuchAlgorithmException ex) {
-            throw new IllegalStateException("SHA-256 no está disponible.", ex);
+            throw new IllegalStateException("SHA-256 no esta disponible.", ex);
         }
     }
 

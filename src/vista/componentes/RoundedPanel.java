@@ -8,7 +8,7 @@ import javax.swing.JPanel;
 
 public class RoundedPanel extends JPanel {
     private final int radius;
-    private final Color background;
+    private final Color fillColor;
     private final boolean shadow;
 
     public RoundedPanel(int radius, Color background) {
@@ -17,7 +17,7 @@ public class RoundedPanel extends JPanel {
 
     public RoundedPanel(int radius, Color background, boolean shadow) {
         this.radius = radius;
-        this.background = background;
+        this.fillColor = background;
         this.shadow = shadow;
         setOpaque(false);
     }
@@ -31,7 +31,7 @@ public class RoundedPanel extends JPanel {
             g2.setColor(new Color(255, 79, 163, 45));
             g2.fillRoundRect(4, 5, getWidth() - 8, getHeight() - 8, radius, radius);
         }
-        g2.setColor(background);
+        g2.setColor(fillColor);
         g2.fillRoundRect(0, 0, getWidth() - inset, getHeight() - inset, radius, radius);
         g2.dispose();
         super.paintComponent(g);

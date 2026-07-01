@@ -7,8 +7,10 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -34,6 +36,9 @@ public class HistorialCajaPanel extends JPanel {
     private final HistorialCajaController controller = new HistorialCajaController();
     private final PedidosController pedidosController = new PedidosController();
     private JTable tabla;
+
+    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    private static final DateTimeFormatter FORMATO_SQL = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public HistorialCajaPanel() {
         ponerFechaActual(fechaDesde);
@@ -101,13 +106,12 @@ public class HistorialCajaPanel extends JPanel {
             String desde = formatoSql(fechaDesde.getValue());
             String hasta = formatoSql(fechaHasta.getValue());
             List<Caja> movimientos = controller.listarPorRango(desde, hasta);
-            SimpleDateFormat fmt = new SimpleDateFormat("dd/MM/yyyy HH:mm");
             for (Caja c : movimientos) {
                 model.addRow(new Object[]{
                     c.getCodigoPedido(),
                     "S/ " + String.format("%.2f", c.getMonto()),
                     c.getMetodoPago(),
-                    fmt.format(c.getFecha()),
+                    formatearFecha(c.getFecha()),
                     c.getTipoMovimiento()
                 });
             }
@@ -153,11 +157,26 @@ public class HistorialCajaPanel extends JPanel {
     }
 
     private void ponerFechaActual(JSpinner spinner) {
-        spinner.setValue(new Date());
+        spinner.setValue(java.util.Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()));
     }
 
     private String formatoSql(Object valor) {
-        Date fecha = valor instanceof Date ? (Date) valor : new Date();
-        return new SimpleDateFormat("yyyy-MM-dd").format(fecha);
+        if (valor instanceof java.util.Date) {
+            return Instant.ofEpochMilli(((java.util.Date) valor).getTime())
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate()
+                    .format(FORMATO_SQL);
+        }
+        return LocalDate.now().format(FORMATO_SQL);
+    }
+
+    private String formatearFecha(java.util.Date fecha) {
+        if (fecha == null) {
+            return "-";
+        }
+        return Instant.ofEpochMilli(fecha.getTime())
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime()
+                .format(FORMATO_FECHA);
     }
 }

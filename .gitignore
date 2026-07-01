@@ -27,3 +27,6 @@ desktop.ini
 !src/resources/img/
 !database/
 !docs/
+
+# Local database configuration
+/config/database.properties

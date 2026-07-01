@@ -1,0 +1,5 @@
+host=localhost
+port=3306
+database=don_crepe_db
+user=tu_usuario_mysql
+password=tu_contraseña_mysql
