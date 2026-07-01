@@ -84,7 +84,7 @@ public class MenuLateral extends JPanel {
                     boton.setBackground(new Color(255, 238, 248));
                 }
                 boton.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(new Color(255, 125, 205)),
+                        BorderFactory.createMatteBorder(0, texto.equals(activo) ? 5 : 1, 0, 0, Estilos.ROSA_FUERTE),
                         BorderFactory.createEmptyBorder(9, 13, 9, 13)));
             }
 
@@ -93,7 +93,9 @@ public class MenuLateral extends JPanel {
                 if (!texto.equals(activo)) {
                     boton.setBackground(new Color(255, 202, 235));
                 }
-                boton.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
+                boton.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createMatteBorder(0, texto.equals(activo) ? 5 : 0, 0, 0, Estilos.ROSA_FUERTE),
+                        BorderFactory.createEmptyBorder(10, 14, 10, 14)));
             }
         });
         return boton;
@@ -111,6 +113,9 @@ public class MenuLateral extends JPanel {
             entry.getValue().setForeground(seleccionado ? Estilos.ROSA_FUERTE : Estilos.TEXTO);
             String tipo = iconoPorNombre(entry.getKey());
             entry.getValue().setIcon(iconoMenu(tipo, seleccionado));
+            entry.getValue().setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(0, seleccionado ? 5 : 0, 0, 0, Estilos.ROSA_FUERTE),
+                    BorderFactory.createEmptyBorder(10, 14, 10, 14)));
         }
     }
 

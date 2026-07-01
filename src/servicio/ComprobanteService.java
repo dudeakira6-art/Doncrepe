@@ -50,12 +50,12 @@ public class ComprobanteService {
 
     private List<String> construirLineas(Pedido pedido, List<DetallePedido> detalles, Comprobante comprobante) {
         List<String> lineas = new ArrayList<String>();
-        lineas.add("DON CREPÃ‰");
+        lineas.add("DON CREPÉ");
         lineas.add(comprobante.getNombreVisible().toUpperCase() + "  " + comprobante.getNumero());
         lineas.add("Pedido: " + pedido.getCodigo());
         lineas.add("Fecha: " + formatoFecha.format(pedido.getFecha()));
-        lineas.add("AtenciÃ³n: " + (pedido.getMesaNumero() == 0 ? "Delivery" : "Mesa " + pedido.getMesaNumero()));
-        lineas.add("MÃ©todo de pago: " + pedido.getMetodoPago());
+        lineas.add("Atención: " + (pedido.getMesaNumero() == 0 ? "Delivery" : "Mesa " + pedido.getMesaNumero()));
+        lineas.add("Método de pago: " + pedido.getMetodoPago());
         lineas.add("");
         if (Comprobante.FACTURA.equals(comprobante.getTipo())) {
             if (comprobante.getClienteNombre() != null && !comprobante.getClienteNombre().trim().isEmpty()) {

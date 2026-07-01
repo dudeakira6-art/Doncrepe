@@ -96,14 +96,14 @@ INSERT INTO mesas (numero, estado) VALUES
 
 INSERT INTO productos (nombre, categoria, precio, imagen, activo) VALUES
 ('Crepe de Fresa', 'Crepe', 12.00, 'Crepé de Fresa.png', 1),
-('Crepe de Nutella', 'Crepe', 11.00, 'Crepe de Nutella.png', 1),
-('Crepe de Platano', 'Crepe', 10.00, 'Crepe platano.png', 1),
-('Crepe Dulce de Leche', 'Crepe', 12.00, 'Crepe Dulce de Leche.png', 1),
+('Crepe de Nutella', 'Crepe dulce', 11.00, 'Crepe de Nutella.png', 1),
+('Crepe de Platano', 'Crepe dulce', 10.00, 'Crepe platano.png', 1),
+('Crepe Dulce de Leche', 'Crepe dulce', 12.00, 'Crepe Dulce de Leche.png', 1),
 ('Crepe de Arandanos', 'Crepe', 14.00, 'Crepé de Arándanos.png', 1),
 ('Crepe de Jamon y Queso', 'Crepe', 12.00, 'Crepe Jamón y Queso.png', 1),
 ('Crepe de Pollo', 'Crepe', 12.00, 'Crepé de Pollo.png', 1),
 ('Crepe de Champinones', 'Crepe', 11.00, 'Crepé de Champiñones.png', 1),
-('Crepe Vegetariano', 'Crepe', 13.00, 'Crep+e Vegetariano.png', 1),
+('Crepe Vegetariano', 'Crepe salado', 13.00, 'Crep+e Vegetariano.png', 1),
 ('Crepe de Huevos', 'Crepe', 13.00, 'Crepé de Huevo.png', 1),
 ('Taza de Cafe Pasado', 'Bebida', 5.00, 'cafe.png', 1),
 ('Frappe', 'Bebida', 9.00, 'Frapuccino.png', 1),

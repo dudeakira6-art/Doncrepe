@@ -37,6 +37,10 @@ public class InicioController {
         return pedidoDAO.pedidosHoy();
     }
 
+    public int pedidosPendientes() throws SQLException {
+        return pedidoDAO.pedidosPendientes();
+    }
+
     public int productosActivos() throws SQLException {
         return productoDAO.contarActivos();
     }

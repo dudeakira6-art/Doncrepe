@@ -17,6 +17,8 @@ public interface IPedidoDAO {
 
     int pedidosHoy() throws SQLException;
 
+    int pedidosPendientes() throws SQLException;
+
     double ventasHoy() throws SQLException;
 
     void crearPedido(int idUsuario, int idMesa, String cliente, String metodoPago, List<DetallePedido> detalles) throws SQLException;

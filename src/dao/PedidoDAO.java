@@ -43,6 +43,15 @@ public class PedidoDAO implements IPedidoDAO {
         }
     }
 
+    public int pedidosPendientes() throws SQLException {
+        String sql = "SELECT COUNT(*) FROM pedidos WHERE estado = 'PENDIENTE'";
+        try (Connection cn = ConexionBD.getConexion();
+             PreparedStatement ps = cn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            return rs.next() ? rs.getInt(1) : 0;
+        }
+    }
+
     public Pedido buscarPorCodigo(String codigo) throws SQLException {
         String sql = "SELECT p.id_pedido, p.codigo, p.cliente, p.total, p.metodo_pago, p.estado, p.fecha, m.numero "
                 + "FROM pedidos p LEFT JOIN mesas m ON m.id_mesa = p.id_mesa WHERE p.codigo = ? LIMIT 1";

@@ -3,6 +3,7 @@ package vista;
 import controlador.HistorialCajaController;
 import controlador.PedidosController;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.io.File;
@@ -15,8 +16,9 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTable;
-import javax.swing.JTextField;
+import javax.swing.SpinnerDateModel;
 import javax.swing.table.DefaultTableModel;
 import modelo.Caja;
 import modelo.ResultadoComprobante;
@@ -25,9 +27,8 @@ import vista.componentes.NeonIcon;
 import vista.componentes.RoundedPanel;
 
 public class HistorialCajaPanel extends JPanel {
-    private final String hoy = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-    private final JTextField fechaDesde = new JTextField(hoy, 10);
-    private final JTextField fechaHasta = new JTextField(hoy, 10);
+    private final JSpinner fechaDesde = crearSpinnerFecha();
+    private final JSpinner fechaHasta = crearSpinnerFecha();
     private final DefaultTableModel model = new DefaultTableModel(new Object[]{"Pedido", "Monto", "Método", "Fecha", "Tipo"}, 0);
     private final JLabel total = new JLabel("Total: S/ 0.00");
     private final HistorialCajaController controller = new HistorialCajaController();
@@ -35,6 +36,8 @@ public class HistorialCajaPanel extends JPanel {
     private JTable tabla;
 
     public HistorialCajaPanel() {
+        ponerFechaActual(fechaDesde);
+        ponerFechaActual(fechaHasta);
         setLayout(new BorderLayout(10, 10));
         setBackground(Estilos.FONDO);
         setBorder(BorderFactory.createEmptyBorder(18, 18, 18, 18));
@@ -58,13 +61,17 @@ public class HistorialCajaPanel extends JPanel {
         titulo.setForeground(Estilos.TEXTO);
         JPanel filtros = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         filtros.setOpaque(false);
+
         JButton buscar = Estilos.botonSecundario("Buscar");
         buscar.addActionListener(e -> cargar());
+
         JButton comprobante = Estilos.botonSecundario("Ver comprobante");
         comprobante.addActionListener(e -> verComprobante());
+
         JButton exportar = Estilos.botonSecundario("Exportar Excel");
         exportar.setIcon(new NeonIcon(NeonIcon.EXCEL, 18, Estilos.ROSA_NEON));
         exportar.addActionListener(e -> exportarExcel());
+
         filtros.add(new JLabel("Desde"));
         filtros.add(fechaDesde);
         filtros.add(new JLabel("Hasta"));
@@ -91,10 +98,18 @@ public class HistorialCajaPanel extends JPanel {
         model.setRowCount(0);
         double suma = 0;
         try {
-            List<Caja> movimientos = controller.listarPorRango(fechaDesde.getText().trim(), fechaHasta.getText().trim());
+            String desde = formatoSql(fechaDesde.getValue());
+            String hasta = formatoSql(fechaHasta.getValue());
+            List<Caja> movimientos = controller.listarPorRango(desde, hasta);
             SimpleDateFormat fmt = new SimpleDateFormat("dd/MM/yyyy HH:mm");
             for (Caja c : movimientos) {
-                model.addRow(new Object[]{c.getCodigoPedido(), "S/ " + String.format("%.2f", c.getMonto()), c.getMetodoPago(), fmt.format(c.getFecha()), c.getTipoMovimiento()});
+                model.addRow(new Object[]{
+                    c.getCodigoPedido(),
+                    "S/ " + String.format("%.2f", c.getMonto()),
+                    c.getMetodoPago(),
+                    fmt.format(c.getFecha()),
+                    c.getTipoMovimiento()
+                });
             }
             suma = controller.sumarMovimientos(movimientos);
             total.setText("Total: S/ " + String.format("%.2f", suma));
@@ -120,10 +135,29 @@ public class HistorialCajaPanel extends JPanel {
 
     private void exportarExcel() {
         try {
-            File archivo = controller.exportarExcel(fechaDesde.getText().trim(), fechaHasta.getText().trim(), new File("reportes"));
+            String desde = formatoSql(fechaDesde.getValue());
+            String hasta = formatoSql(fechaHasta.getValue());
+            File archivo = controller.exportarExcel(desde, hasta, new File("reportes"));
             JOptionPane.showMessageDialog(this, "Reporte exportado correctamente:\n" + archivo.getAbsolutePath());
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "No se pudo exportar el reporte:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private JSpinner crearSpinnerFecha() {
+        JSpinner spinner = new JSpinner(new SpinnerDateModel());
+        JSpinner.DateEditor editor = new JSpinner.DateEditor(spinner, "yyyy-MM-dd");
+        spinner.setEditor(editor);
+        spinner.setPreferredSize(new Dimension(120, 30));
+        return spinner;
+    }
+
+    private void ponerFechaActual(JSpinner spinner) {
+        spinner.setValue(new Date());
+    }
+
+    private String formatoSql(Object valor) {
+        Date fecha = valor instanceof Date ? (Date) valor : new Date();
+        return new SimpleDateFormat("yyyy-MM-dd").format(fecha);
     }
 }

@@ -77,7 +77,7 @@ public class InicioPanel extends JPanel {
             resumen.add(tarjeta("Ventas del dia", "S/ " + String.format("%.2f", controller.ventasHoy()), NeonIcon.CASH));
             resumen.add(tarjeta("Caja actual", "S/ " + String.format("%.2f", controller.cajaActual()), NeonIcon.EXCEL));
             resumen.add(tarjeta("Pedidos hoy", String.valueOf(controller.pedidosHoy()), NeonIcon.ORDER));
-            resumen.add(tarjeta("Productos", String.valueOf(controller.productosActivos()), NeonIcon.PRODUCT));
+            resumen.add(tarjeta("Pendientes", String.valueOf(controller.pedidosPendientes()), NeonIcon.ORDER));
         } catch (Exception ex) {
             resumen.add(tarjeta("MySQL", "Sin conexion", NeonIcon.CASH));
             resumen.add(tarjeta("Revise", "README", NeonIcon.ORDER));

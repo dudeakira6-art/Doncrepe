@@ -53,8 +53,8 @@ public class ProductosPanel extends JPanel {
         tabs.removeAll();
         try {
             List<Producto> productos = controller.listarProductos();
-            tabs.add("Crepés dulces", crearScrollCategoria(productos, "dulce"));
-            tabs.add("Crepés salados", crearScrollCategoria(productos, "salado"));
+                        tabs.add("Crepés dulces", crearScrollCategoria(productos, "crepe dulce"));
+                        tabs.add("Crepés salados", crearScrollCategoria(productos, "crepe salado"));
             tabs.add("Bebidas", crearScrollCategoria(productos, "bebida"));
         } catch (Exception ex) {
             JPanel error = new JPanel();
@@ -70,7 +70,7 @@ public class ProductosPanel extends JPanel {
         JPanel grilla = new JPanel(new WrapLayout(FlowLayout.LEFT, 14, 14));
         grilla.setOpaque(false);
         for (Producto producto : productos) {
-            if (!categoriaProducto(producto).equals(categoria)) {
+            if (!categoriaClave(producto.getCategoria()).equals(categoria)) {
                 continue;
             }
             ProductCard card = new ProductCard(producto);
@@ -103,11 +103,12 @@ public class ProductosPanel extends JPanel {
 
     private void mostrarFormulario(Producto producto) {
         JTextField nombre = new JTextField(producto == null ? "" : producto.getNombre());
-        JTextField categoria = new JTextField(producto == null ? "Crepe" : producto.getCategoria());
+        javax.swing.JComboBox<String> categoria = new javax.swing.JComboBox<String>(new String[]{"Crepe dulce", "Crepe salado", "Bebida"});
         JTextField precio = new JTextField(producto == null ? "" : String.valueOf(producto.getPrecio()));
         JTextField imagen = new JTextField(producto == null ? "" : producto.getImagen());
+        categoria.setSelectedItem(categoriaNormalizada(producto == null ? "Crepe dulce" : producto.getCategoria()));
 
-        JPanel panel = new JPanel(new GridLayout(0, 1, 4, 4));
+        JPanel panel = new JPanel(new GridLayout(0, 1, 6, 6));
         panel.add(new JLabel("Nombre"));
         panel.add(nombre);
         panel.add(new JLabel("Categoría"));
@@ -125,9 +126,9 @@ public class ProductosPanel extends JPanel {
         try {
             double valor = Double.parseDouble(precio.getText().trim());
             if (producto == null) {
-                controller.guardarProducto(new Producto(0, nombre.getText().trim(), categoria.getText().trim(), valor, imagen.getText().trim(), true));
+                controller.guardarProducto(new Producto(0, nombre.getText().trim(), categoria.getSelectedItem().toString().trim(), valor, imagen.getText().trim(), true));
             } else {
-                Producto actualizado = new Producto(producto.getIdProducto(), nombre.getText().trim(), categoria.getText().trim(), valor, imagen.getText().trim(), true);
+                Producto actualizado = new Producto(producto.getIdProducto(), nombre.getText().trim(), categoria.getSelectedItem().toString().trim(), valor, imagen.getText().trim(), true);
                 controller.guardarProducto(actualizado);
             }
             cargar();
@@ -149,14 +150,25 @@ public class ProductosPanel extends JPanel {
         }
     }
 
-    private String categoriaProducto(Producto producto) {
-        String nombre = producto.getNombre().toLowerCase();
-        if (nombre.contains("cafe") || nombre.contains("frappe") || nombre.contains("jugo") || nombre.contains("batido") || nombre.contains("coca")) {
+    private String categoriaNormalizada(String categoria) {
+        String valor = categoria == null ? "" : categoria.trim().toLowerCase();
+        if (valor.contains("bebida")) {
+            return "Bebida";
+        }
+        if (valor.contains("salado")) {
+            return "Crepe salado";
+        }
+        return "Crepe dulce";
+    }
+
+    private String categoriaClave(String categoria) {
+        String valor = categoria == null ? "" : categoria.trim().toLowerCase();
+        if (valor.contains("bebida")) {
             return "bebida";
         }
-        if (nombre.contains("jamon") || nombre.contains("queso") || nombre.contains("pollo") || nombre.contains("champi") || nombre.contains("veget") || nombre.contains("huevo")) {
-            return "salado";
+        if (valor.contains("salado")) {
+            return "crepe salado";
         }
-        return "dulce";
+        return "crepe dulce";
     }
 }
