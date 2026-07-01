@@ -17,6 +17,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Java
+        uses: actions/setup-java@09998ac74b86d489cc10f12f6b808f84f7dc0879 # v4.6.0
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Compile project
+        run: ant -noinput compile
+
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v7
         env:
