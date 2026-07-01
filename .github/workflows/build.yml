@@ -1,4 +1,5 @@
 name: SonarQube
+run-name: SonarQube
 
 on:
   push:
