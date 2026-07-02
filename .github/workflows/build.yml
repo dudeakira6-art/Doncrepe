@@ -25,7 +25,10 @@ jobs:
           java-version: "21"
 
       - name: Generate coverage report
-        run: ant -noinput coverage
+        shell: powershell
+        run: |
+          powershell -ExecutionPolicy Bypass -File scripts\compile-all-local.ps1
+          powershell -ExecutionPolicy Bypass -File scripts\run-coverage.ps1
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v7
