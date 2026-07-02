@@ -74,7 +74,7 @@ public class ProductosPanel extends JPanel {
         JPanel grilla = new JPanel(new WrapLayout(FlowLayout.LEFT, 14, 14));
         grilla.setOpaque(false);
         for (Producto producto : productos) {
-            if (!categoriaClave(producto.getCategoria()).equals(categoria)) {
+            if (!categoriaNormalizada(producto.getCategoria()).equals(categoria)) {
                 continue;
             }
             ProductCard card = new ProductCard(producto);
@@ -170,16 +170,6 @@ public class ProductosPanel extends JPanel {
         return CATEGORIA_DULCE;
     }
 
-    private String categoriaClave(String categoria) {
-        String valor = categoria == null ? "" : categoria.trim().toLowerCase();
-        if (valor.contains("bebida")) {
-            return CATEGORIA_BEBIDA;
-        }
-        if (valor.contains("salado")) {
-            return CATEGORIA_SALADO;
-        }
-        return CATEGORIA_DULCE;
-    }
 }
 
 

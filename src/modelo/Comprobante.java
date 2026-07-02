@@ -19,17 +19,11 @@ public class Comprobante {
     private String archivoPdf;
     private LocalDateTime fecha;
 
-    public Comprobante(int idComprobante, int idPedido, String tipo, String numero, String clienteNombre,
-            String dni, String ruc, String razonSocial, String direccion, String archivoPdf, LocalDateTime fecha) {
+    public Comprobante(int idComprobante, int idPedido, String tipo, String numero, String archivoPdf, LocalDateTime fecha) {
         this.idComprobante = idComprobante;
         this.idPedido = idPedido;
         this.tipo = tipo;
         this.numero = numero;
-        this.clienteNombre = clienteNombre;
-        this.dni = dni;
-        this.ruc = ruc;
-        this.razonSocial = razonSocial;
-        this.direccion = direccion;
         this.archivoPdf = archivoPdf;
         this.fecha = fecha;
     }
@@ -86,5 +80,33 @@ public class Comprobante {
             return "Boleta";
         }
         return "Boleta simple";
+    }
+
+    public void setClienteNombre(String clienteNombre) {
+        this.clienteNombre = clienteNombre;
+    }
+
+    public void setDni(String dni) {
+        this.dni = dni;
+    }
+
+    public void setRuc(String ruc) {
+        this.ruc = ruc;
+    }
+
+    public void setRazonSocial(String razonSocial) {
+        this.razonSocial = razonSocial;
+    }
+
+    public void setDireccion(String direccion) {
+        this.direccion = direccion;
+    }
+
+    public void setArchivoPdf(String archivoPdf) {
+        this.archivoPdf = archivoPdf;
+    }
+
+    public void setFecha(LocalDateTime fecha) {
+        this.fecha = fecha;
     }
 }

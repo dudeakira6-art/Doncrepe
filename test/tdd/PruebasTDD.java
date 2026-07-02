@@ -133,9 +133,12 @@ public class PruebasTDD {
     private void debeGenerarComprobantePdf() {
         List<DetallePedido> detalles = new ArrayList<DetallePedido>();
         detalles.add(new DetallePedido(new Producto(1, "Crepe de Fresa", "Crepe", 12.00, "", true), 2));
-        Pedido pedido = new Pedido(1, "P-TDD", "Cliente TDD", 24.00, "Efectivo", "COMPLETADO", LocalDateTime.now(), 1);
+        Pedido pedido = new Pedido(1, "P-TDD", "Cliente TDD", 24.00, "Efectivo", "COMPLETADO", LocalDateTime.now());
+        pedido.setMesaNumero(1);
         File carpeta = new File("build/test/comprobantes");
-        Comprobante comprobante = new Comprobante(0, 1, Comprobante.BOLETA_DNI, "B001-TDD", "Cliente TDD", "12345678", "", "", "", "B001-TDD.pdf", LocalDateTime.now());
+        Comprobante comprobante = new Comprobante(0, 1, Comprobante.BOLETA_DNI, "B001-TDD", "B001-TDD.pdf", LocalDateTime.now());
+        comprobante.setClienteNombre("Cliente TDD");
+        comprobante.setDni("12345678");
         File archivo = new File(carpeta, "B001-TDD.pdf");
 
         try {

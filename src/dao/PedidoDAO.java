@@ -378,30 +378,32 @@ public class PedidoDAO implements IPedidoDAO {
     }
 
     private Pedido mapear(ResultSet rs) throws SQLException {
-        return new Pedido(
+        Pedido pedido = new Pedido(
                 rs.getInt(COL_ID_PEDIDO),
                 rs.getString("codigo"),
                 rs.getString("cliente"),
                 rs.getDouble("total"),
                 rs.getString("metodo_pago"),
                 rs.getString("estado"),
-                toLocalDateTime(rs, "fecha"),
-                rs.getInt("numero"));
+                toLocalDateTime(rs, "fecha"));
+        pedido.setMesaNumero(rs.getInt("numero"));
+        return pedido;
     }
 
     private Comprobante mapearComprobante(ResultSet rs) throws SQLException {
-        return new Comprobante(
+        Comprobante comprobante = new Comprobante(
                 rs.getInt(COL_ID_COMPROBANTE),
                 rs.getInt(COL_ID_PEDIDO),
                 rs.getString("tipo"),
                 rs.getString("numero"),
-                rs.getString("cliente_nombre"),
-                rs.getString("dni"),
-                rs.getString("ruc"),
-                rs.getString("razon_social"),
-                rs.getString("direccion"),
                 rs.getString("archivo_pdf"),
                 toLocalDateTime(rs, "fecha"));
+        comprobante.setClienteNombre(rs.getString("cliente_nombre"));
+        comprobante.setDni(rs.getString("dni"));
+        comprobante.setRuc(rs.getString("ruc"));
+        comprobante.setRazonSocial(rs.getString("razon_social"));
+        comprobante.setDireccion(rs.getString("direccion"));
+        return comprobante;
     }
 
     private LocalDateTime toLocalDateTime(ResultSet rs, String columna) throws SQLException {

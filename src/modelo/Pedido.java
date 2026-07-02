@@ -12,7 +12,7 @@ public class Pedido {
     private LocalDateTime fecha;
     private int mesaNumero;
 
-    public Pedido(int idPedido, String codigo, String cliente, double total, String metodoPago, String estado, LocalDateTime fecha, int mesaNumero) {
+    public Pedido(int idPedido, String codigo, String cliente, double total, String metodoPago, String estado, LocalDateTime fecha) {
         this.idPedido = idPedido;
         this.codigo = codigo;
         this.cliente = cliente;
@@ -20,6 +20,9 @@ public class Pedido {
         this.metodoPago = metodoPago;
         this.estado = estado;
         this.fecha = fecha;
+    }
+
+    public void setMesaNumero(int mesaNumero) {
         this.mesaNumero = mesaNumero;
     }
 

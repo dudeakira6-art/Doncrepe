@@ -33,7 +33,9 @@ public class ReporteCajaExcelService {
             }
             workbook.write(salida);
         }
-        LOGGER.info("Reporte de caja exportado: {} columnas [{}]", archivo.getAbsolutePath(), Joiner.on(", ").join(ENCABEZADOS));
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Reporte de caja exportado: {} columnas [{}]", archivo.getAbsolutePath(), Joiner.on(", ").join(ENCABEZADOS));
+        }
         return archivo;
     }
 

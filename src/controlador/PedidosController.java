@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import modelo.Comprobante;
@@ -135,7 +136,9 @@ public class PedidosController {
         }
         String ubicacion = delivery ? "Delivery" : "mesa " + mesa.getNumero();
         int idMesa = delivery ? 0 : mesa.getIdMesa();
-        LOGGER.info("Creando pedido para {} en {} con productos: {}", clienteNormalizado, ubicacion, resumenProductos(detalles));
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Creando pedido para {} en {} con productos: {}", clienteNormalizado, ubicacion, resumenProductos(detalles));
+        }
         pedidoDAO.crearPedido(usuario.getIdUsuario(), idMesa, clienteNormalizado, metodoPago, detalles);
     }
 
@@ -177,8 +180,8 @@ public class PedidosController {
                 pedidoActual.getTotal(),
                 metodoPago,
                 ESTADO_COMPLETADO,
-                pedidoActual.getFecha(),
-                pedidoActual.getMesaNumero());
+                pedidoActual.getFecha());
+        pedidoParaComprobante.setMesaNumero(pedidoActual.getMesaNumero());
         File pdf = comprobanteService.generarPdf(pedidoParaComprobante, detalles, comprobante, carpetaComprobantes);
         try {
             pedidoDAO.registrarPago(codigo, metodoPago, comprobante);
@@ -251,10 +254,13 @@ public class PedidosController {
         File carpeta = solicitud.getCarpetaComprobantes();
         String archivo = new File(carpeta, numero + ".pdf").getPath();
         String nombre = StringUtils.defaultIfBlank(solicitud.getClienteNombre(), pedido.getCliente());
-        return new Comprobante(0, pedido.getIdPedido(), solicitud.getTipoComprobante(), numero, nombre.trim(),
-                StringUtils.trimToEmpty(solicitud.getDni()), StringUtils.trimToEmpty(solicitud.getRuc()),
-                StringUtils.trimToEmpty(solicitud.getRazonSocial()), StringUtils.trimToEmpty(solicitud.getDireccion()),
-                archivo, LocalDateTime.now());
+        Comprobante comprobante = new Comprobante(0, pedido.getIdPedido(), solicitud.getTipoComprobante(), numero, archivo, LocalDateTime.now(ZoneId.systemDefault()));
+        comprobante.setClienteNombre(nombre.trim());
+        comprobante.setDni(StringUtils.trimToEmpty(solicitud.getDni()));
+        comprobante.setRuc(StringUtils.trimToEmpty(solicitud.getRuc()));
+        comprobante.setRazonSocial(StringUtils.trimToEmpty(solicitud.getRazonSocial()));
+        comprobante.setDireccion(StringUtils.trimToEmpty(solicitud.getDireccion()));
+        return comprobante;
     }
 
     public static final class PedidoSolicitud {

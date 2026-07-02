@@ -30,7 +30,12 @@ public class MesaCard extends RoundedPanel {
         estado.setFont(new Font("Segoe UI", Font.BOLD, 12));
 
         ImageIcon mesaIcon = Recursos.imagen("mesa.png", 58, 58);
-        javax.swing.Icon iconoMesa = mesaIcon != null ? mesaIcon : new NeonIcon(NeonIcon.TABLE, 50, libre ? Estilos.CELESTE : Estilos.ROSA_NEON);
+        javax.swing.Icon iconoMesa;
+        if (mesaIcon != null) {
+            iconoMesa = mesaIcon;
+        } else {
+            iconoMesa = new NeonIcon(NeonIcon.TABLE, 50, libre ? Estilos.CELESTE : Estilos.ROSA_NEON);
+        }
         JLabel mesaGrafica = new JLabel(iconoMesa);
         mesaGrafica.setHorizontalAlignment(SwingConstants.CENTER);
 
