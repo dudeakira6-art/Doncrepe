@@ -9,8 +9,8 @@ import java.awt.Font;
 import java.awt.Cursor;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.sql.SQLException;
@@ -21,6 +21,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
 import modelo.Pedido;
 import modelo.Usuario;
@@ -147,7 +148,7 @@ public class InicioPanel extends JPanel {
         panel.setBorder(BorderFactory.createEmptyBorder(14, 14, 14, 14));
         panel.setPreferredSize(new Dimension(0, 95));
         JLabel icon = new JLabel(new NeonIcon(icono, 32, Estilos.ROSA_NEON));
-        icon.setHorizontalAlignment(JLabel.CENTER);
+        icon.setHorizontalAlignment(SwingConstants.CENTER);
         JLabel lblTitulo = new JLabel(titulo);
         lblTitulo.setFont(Estilos.fuenteNormal());
         lblTitulo.setForeground(Estilos.TEXTO_SUAVE);
@@ -164,7 +165,7 @@ public class InicioPanel extends JPanel {
     }
 
     private JScrollPane crearActividad() {
-        DefaultTableModel model = new DefaultTableModel(new Object[]{"Pedido", "Mesa", "Fecha", "Total", "Estado"}, 0);
+        DefaultTableModel model = new DefaultTableModel(new Object[]{DESTINO_PEDIDO, "Mesa", "Fecha", "Total", "Estado"}, 0);
         try {
             List<Pedido> pedidos = controller.actividadReciente();
             for (Pedido p : pedidos) {
@@ -182,13 +183,10 @@ public class InicioPanel extends JPanel {
         return scroll;
     }
 
-    private String formatearFecha(java.util.Date fecha) {
+    private String formatearFecha(LocalDateTime fecha) {
         if (fecha == null) {
             return "-";
         }
-        return Instant.ofEpochMilli(fecha.getTime())
-                .atZone(ZoneId.systemDefault())
-                .toLocalDateTime()
-                .format(FECHA_ACTIVIDAD);
+        return fecha.format(FECHA_ACTIVIDAD);
     }
 }

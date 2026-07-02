@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableList;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import modelo.Caja;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 public class ReporteCajaExcelService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReporteCajaExcelService.class);
     private static final List<String> ENCABEZADOS = ImmutableList.of("Pedido", "Monto", "Metodo", "Fecha", "Tipo");
+    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     public File exportar(List<Caja> movimientos, String fechaReporte, File archivo) throws IOException {
         try (XSSFWorkbook workbook = new XSSFWorkbook();
@@ -53,14 +54,13 @@ public class ReporteCajaExcelService {
     }
 
     private void escribirMovimientos(Sheet sheet, List<Caja> movimientos) {
-        SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy HH:mm");
         for (int i = 0; i < movimientos.size(); i++) {
             Caja caja = movimientos.get(i);
             Row fila = sheet.createRow(i + 1);
             fila.createCell(0).setCellValue(caja.getCodigoPedido());
             fila.createCell(1).setCellValue(caja.getMonto());
             fila.createCell(2).setCellValue(caja.getMetodoPago());
-            fila.createCell(3).setCellValue(formato.format(caja.getFecha()));
+            fila.createCell(3).setCellValue(FORMATO_FECHA.format(caja.getFecha()));
             fila.createCell(4).setCellValue(caja.getTipoMovimiento());
         }
     }

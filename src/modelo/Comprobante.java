@@ -1,6 +1,6 @@
 package modelo;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 public class Comprobante {
     public static final String BOLETA_SIMPLE = "BOLETA_SIMPLE";
@@ -17,10 +17,10 @@ public class Comprobante {
     private String razonSocial;
     private String direccion;
     private String archivoPdf;
-    private Date fecha;
+    private LocalDateTime fecha;
 
     public Comprobante(int idComprobante, int idPedido, String tipo, String numero, String clienteNombre,
-            String dni, String ruc, String razonSocial, String direccion, String archivoPdf, Date fecha) {
+            String dni, String ruc, String razonSocial, String direccion, String archivoPdf, LocalDateTime fecha) {
         this.idComprobante = idComprobante;
         this.idPedido = idPedido;
         this.tipo = tipo;
@@ -74,7 +74,7 @@ public class Comprobante {
         return archivoPdf;
     }
 
-    public Date getFecha() {
+    public LocalDateTime getFecha() {
         return fecha;
     }
 

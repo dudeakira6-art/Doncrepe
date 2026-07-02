@@ -3,9 +3,9 @@ package servicio;
 import java.io.File;
 import java.io.IOException;
 import java.text.Normalizer;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.format.DateTimeFormatter;
 import modelo.Comprobante;
 import modelo.DetallePedido;
 import modelo.Pedido;
@@ -16,7 +16,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
 public class ComprobanteService {
-    private final SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     public File generarPdf(Pedido pedido, List<DetallePedido> detalles, Comprobante comprobante, File carpetaDestino) throws IOException {
         if (!carpetaDestino.exists() && !carpetaDestino.mkdirs()) {
@@ -54,7 +54,7 @@ public class ComprobanteService {
         lineas.add("DON CREPE");
         lineas.add(comprobante.getNombreVisible().toUpperCase() + "  " + comprobante.getNumero());
         lineas.add("Pedido: " + pedido.getCodigo());
-        lineas.add("Fecha: " + formatoFecha.format(pedido.getFecha()));
+        lineas.add("Fecha: " + FORMATO_FECHA.format(pedido.getFecha()));
         lineas.add("Atencion: " + (pedido.getMesaNumero() == 0 ? "Delivery" : "Mesa " + pedido.getMesaNumero()));
         lineas.add("Metodo de pago: " + pedido.getMetodoPago());
         lineas.add("");

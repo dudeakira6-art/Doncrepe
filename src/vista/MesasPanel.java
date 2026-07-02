@@ -71,14 +71,14 @@ public class MesasPanel extends JPanel {
         String nuevo = "LIBRE".equalsIgnoreCase(mesa.getEstado()) ? "OCUPADO" : "LIBRE";
         if ("OCUPADO".equals(nuevo) && alOcuparMesa != null) {
             int abrir = JOptionPane.showConfirmDialog(this,
-                    "¿Crear un pedido para la Mesa " + mesa.getNumero() + "?", "Mesas", JOptionPane.YES_NO_OPTION);
+                    "Â¿Crear un pedido para la Mesa " + mesa.getNumero() + "?", TITULO, JOptionPane.YES_NO_OPTION);
             if (abrir == JOptionPane.YES_OPTION) {
                 alOcuparMesa.accept(mesa);
             }
             return;
         }
         int ok = JOptionPane.showConfirmDialog(this,
-                "¿Cambiar Mesa " + mesa.getNumero() + " a " + nuevo + "?", "Mesas", JOptionPane.YES_NO_OPTION);
+                "Â¿Cambiar Mesa " + mesa.getNumero() + " a " + nuevo + "?", TITULO, JOptionPane.YES_NO_OPTION);
         if (ok != JOptionPane.YES_OPTION) {
             return;
         }
@@ -92,3 +92,4 @@ public class MesasPanel extends JPanel {
         }
     }
 }
+

@@ -12,9 +12,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import modelo.Comprobante;
 import modelo.DetallePedido;
@@ -135,9 +133,10 @@ public class PedidosController {
         if (!delivery && !"LIBRE".equalsIgnoreCase(mesa.getEstado())) {
             throw new IllegalArgumentException("La mesa seleccionada está ocupada.");
         }
-        LOGGER.info("Creando pedido para {} en {} con productos: {}", clienteNormalizado,
-                delivery ? "Delivery" : "mesa " + mesa.getNumero(), resumenProductos(detalles));
-        pedidoDAO.crearPedido(usuario.getIdUsuario(), delivery ? 0 : mesa.getIdMesa(), clienteNormalizado, metodoPago, detalles);
+        String ubicacion = delivery ? "Delivery" : "mesa " + mesa.getNumero();
+        int idMesa = delivery ? 0 : mesa.getIdMesa();
+        LOGGER.info("Creando pedido para {} en {} con productos: {}", clienteNormalizado, ubicacion, resumenProductos(detalles));
+        pedidoDAO.crearPedido(usuario.getIdUsuario(), idMesa, clienteNormalizado, metodoPago, detalles);
     }
 
     public ResultadoComprobante procesarPagoYGenerarComprobante(PagoComprobanteSolicitud solicitud)
@@ -191,7 +190,7 @@ public class PedidosController {
                     LOGGER.warn("No se pudo eliminar el PDF huérfano {}", pdf.getAbsolutePath(), ioEx);
                 }
             }
-            throw ex;
+            throw new SQLException("No se pudo registrar el pago del pedido " + codigo + ".", ex);
         }
         Pedido pedidoPagado = pedidoDAO.buscarPorCodigo(codigo);
         return new ResultadoComprobante(pedidoPagado, detalles, comprobante, pdf);
@@ -255,7 +254,7 @@ public class PedidosController {
         return new Comprobante(0, pedido.getIdPedido(), solicitud.getTipoComprobante(), numero, nombre.trim(),
                 StringUtils.trimToEmpty(solicitud.getDni()), StringUtils.trimToEmpty(solicitud.getRuc()),
                 StringUtils.trimToEmpty(solicitud.getRazonSocial()), StringUtils.trimToEmpty(solicitud.getDireccion()),
-                archivo, Date.from(LocalDateTime.now(ZoneId.systemDefault()).atZone(ZoneId.systemDefault()).toInstant()));
+                archivo, LocalDateTime.now());
     }
 
     public static final class PedidoSolicitud {

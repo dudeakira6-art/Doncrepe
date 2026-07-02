@@ -11,7 +11,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
-import modelo.Mesa;
 import modelo.Usuario;
 import vista.componentes.MenuLateral;
 import vista.componentes.NeonIcon;

@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import modelo.Comprobante;
@@ -151,8 +152,8 @@ public class PedidoDAO implements IPedidoDAO {
             }
 
             try (PreparedStatement ps = cn.prepareStatement(sqlDetalle)) {
+                ps.setInt(1, idPedido);
                 for (DetallePedido detalle : detalles) {
-                    ps.setInt(1, idPedido);
                     ps.setInt(2, detalle.getProducto().getIdProducto());
                     ps.setInt(3, detalle.getCantidad());
                     ps.setDouble(4, detalle.getProducto().getPrecio());
@@ -176,7 +177,7 @@ public class PedidoDAO implements IPedidoDAO {
                 cn.rollback();
             }
             LOGGER.error("No se pudo guardar el pedido {}.", codigo, ex);
-            throw ex;
+            throw new SQLException("No se pudo guardar el pedido " + codigo + ".", ex);
         } finally {
             if (cn != null) {
                 cn.setAutoCommit(true);
@@ -256,7 +257,7 @@ public class PedidoDAO implements IPedidoDAO {
                 cn.rollback();
             }
             LOGGER.error("No se pudo registrar el pago del pedido {}.", codigo, ex);
-            throw ex;
+            throw new SQLException("No se pudo registrar el pago del pedido " + codigo + ".", ex);
         } finally {
             if (cn != null) {
                 cn.setAutoCommit(true);
@@ -338,7 +339,7 @@ public class PedidoDAO implements IPedidoDAO {
                 cn.rollback();
             }
             LOGGER.error("No se pudo eliminar el pedido {}.", codigo, ex);
-            throw ex;
+            throw new SQLException("No se pudo eliminar el pedido " + codigo + ".", ex);
         } finally {
             if (cn != null) {
                 cn.setAutoCommit(true);
@@ -384,7 +385,7 @@ public class PedidoDAO implements IPedidoDAO {
                 rs.getDouble("total"),
                 rs.getString("metodo_pago"),
                 rs.getString("estado"),
-                rs.getTimestamp("fecha"),
+                toLocalDateTime(rs, "fecha"),
                 rs.getInt("numero"));
     }
 
@@ -400,6 +401,11 @@ public class PedidoDAO implements IPedidoDAO {
                 rs.getString("razon_social"),
                 rs.getString("direccion"),
                 rs.getString("archivo_pdf"),
-                rs.getTimestamp("fecha"));
+                toLocalDateTime(rs, "fecha"));
+    }
+
+    private LocalDateTime toLocalDateTime(ResultSet rs, String columna) throws SQLException {
+        java.sql.Timestamp timestamp = rs.getTimestamp(columna);
+        return timestamp == null ? null : timestamp.toLocalDateTime();
     }
 }

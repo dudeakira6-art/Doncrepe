@@ -1,6 +1,6 @@
 package modelo;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 public class Pedido {
     private int idPedido;
@@ -9,10 +9,10 @@ public class Pedido {
     private double total;
     private String metodoPago;
     private String estado;
-    private Date fecha;
+    private LocalDateTime fecha;
     private int mesaNumero;
 
-    public Pedido(int idPedido, String codigo, String cliente, double total, String metodoPago, String estado, Date fecha, int mesaNumero) {
+    public Pedido(int idPedido, String codigo, String cliente, double total, String metodoPago, String estado, LocalDateTime fecha, int mesaNumero) {
         this.idPedido = idPedido;
         this.codigo = codigo;
         this.cliente = cliente;
@@ -47,7 +47,7 @@ public class Pedido {
         return estado;
     }
 
-    public Date getFecha() {
+    public LocalDateTime getFecha() {
         return fecha;
     }
 

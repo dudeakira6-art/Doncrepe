@@ -23,9 +23,6 @@ public class ProductosPanel extends JPanel {
     private static final String CATEGORIA_DULCE = "Crepe dulce";
     private static final String CATEGORIA_SALADO = "Crepe salado";
     private static final String CATEGORIA_BEBIDA = "Bebida";
-    private static final String CLAVE_DULCE = "crepe dulce";
-    private static final String CLAVE_SALADO = "crepe salado";
-    private static final String CLAVE_BEBIDA = "bebida";
     private final JTabbedPane tabs = new JTabbedPane();
     private final transient ProductosController controller = new ProductosController();
 
@@ -60,9 +57,9 @@ public class ProductosPanel extends JPanel {
         tabs.removeAll();
         try {
             List<Producto> productos = controller.listarProductos();
-            tabs.add("Crepés dulces", crearScrollCategoria(productos, "crepe dulce"));
-            tabs.add("Crepés salados", crearScrollCategoria(productos, "crepe salado"));
-            tabs.add("Bebidas", crearScrollCategoria(productos, "bebida"));
+            tabs.add("Crepés dulces", crearScrollCategoria(productos, CATEGORIA_DULCE));
+            tabs.add("Crepés salados", crearScrollCategoria(productos, CATEGORIA_SALADO));
+            tabs.add("Bebidas", crearScrollCategoria(productos, CATEGORIA_BEBIDA));
         } catch (SQLException ex) {
             JPanel error = new JPanel();
             error.setOpaque(false);
@@ -111,15 +108,15 @@ public class ProductosPanel extends JPanel {
     private void mostrarFormulario(Producto producto) {
         JTextField nombre = new JTextField(producto == null ? "" : producto.getNombre());
         javax.swing.JComboBox<String> categoria = new javax.swing.JComboBox<String>(
-                new String[]{"Crepe dulce", "Crepe salado", "Bebida"});
+                new String[]{CATEGORIA_DULCE, CATEGORIA_SALADO, CATEGORIA_BEBIDA});
         JTextField precio = new JTextField(producto == null ? "" : String.valueOf(producto.getPrecio()));
         JTextField imagen = new JTextField(producto == null ? "" : producto.getImagen());
-        categoria.setSelectedItem(categoriaNormalizada(producto == null ? "Crepe dulce" : producto.getCategoria()));
+        categoria.setSelectedItem(categoriaNormalizada(producto == null ? CATEGORIA_DULCE : producto.getCategoria()));
 
         JPanel panel = new JPanel(new GridLayout(0, 1, 6, 6));
         panel.add(new JLabel("Nombre"));
         panel.add(nombre);
-        panel.add(new JLabel("Categoría"));
+        panel.add(new JLabel("CategorÃ­a"));
         panel.add(categoria);
         panel.add(new JLabel("Precio"));
         panel.add(precio);
@@ -143,14 +140,14 @@ public class ProductosPanel extends JPanel {
             controller.guardarProducto(nuevo);
             cargar();
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Ingrese un precio válido.");
+            JOptionPane.showMessageDialog(this, "Ingrese un precio vÃ¡lido.");
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, "No se pudo guardar producto:\n" + ex.getMessage());
         }
     }
 
     private void eliminar(Producto producto) {
-        int ok = JOptionPane.showConfirmDialog(this, "¿Eliminar " + producto.getNombre() + "?", "Confirmar", JOptionPane.YES_NO_OPTION);
+        int ok = JOptionPane.showConfirmDialog(this, "Â¿Eliminar " + producto.getNombre() + "?", "Confirmar", JOptionPane.YES_NO_OPTION);
         if (ok != JOptionPane.YES_OPTION) {
             return;
         }
@@ -165,22 +162,24 @@ public class ProductosPanel extends JPanel {
     private String categoriaNormalizada(String categoria) {
         String valor = categoria == null ? "" : categoria.trim().toLowerCase();
         if (valor.contains("bebida")) {
-            return "Bebida";
+            return CATEGORIA_BEBIDA;
         }
         if (valor.contains("salado")) {
-            return "Crepe salado";
+            return CATEGORIA_SALADO;
         }
-        return "Crepe dulce";
+        return CATEGORIA_DULCE;
     }
 
     private String categoriaClave(String categoria) {
         String valor = categoria == null ? "" : categoria.trim().toLowerCase();
         if (valor.contains("bebida")) {
-            return "bebida";
+            return CATEGORIA_BEBIDA;
         }
         if (valor.contains("salado")) {
-            return "crepe salado";
+            return CATEGORIA_SALADO;
         }
-        return "crepe dulce";
+        return CATEGORIA_DULCE;
     }
 }
+
+

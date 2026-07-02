@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDateTime;
 import modelo.Caja;
 
 public class CajaDAO implements ICajaDAO {
@@ -40,11 +41,16 @@ public class CajaDAO implements ICajaDAO {
                             rs.getString("codigo"),
                             rs.getDouble("monto"),
                             rs.getString("metodo_pago"),
-                            rs.getTimestamp("fecha"),
+                            toLocalDateTime(rs, "fecha"),
                             rs.getString("tipo_atencion")));
                 }
             }
         }
         return movimientos;
+    }
+
+    private LocalDateTime toLocalDateTime(ResultSet rs, String columna) throws SQLException {
+        java.sql.Timestamp timestamp = rs.getTimestamp(columna);
+        return timestamp == null ? null : timestamp.toLocalDateTime();
     }
 }

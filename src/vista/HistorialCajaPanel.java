@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -172,13 +173,10 @@ public class HistorialCajaPanel extends JPanel {
         return LocalDate.now(ZoneId.systemDefault()).format(FORMATO_SQL);
     }
 
-    private String formatearFecha(java.util.Date fecha) {
+    private String formatearFecha(LocalDateTime fecha) {
         if (fecha == null) {
             return "-";
         }
-        return Instant.ofEpochMilli(fecha.getTime())
-                .atZone(ZoneId.systemDefault())
-                .toLocalDateTime()
-                .format(FORMATO_FECHA);
+        return fecha.format(FORMATO_FECHA);
     }
 }

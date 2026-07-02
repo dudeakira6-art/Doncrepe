@@ -1,16 +1,16 @@
 package modelo;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 public class Caja {
     private int idCaja;
     private String codigoPedido;
     private double monto;
     private String metodoPago;
-    private Date fecha;
+    private LocalDateTime fecha;
     private String tipoMovimiento;
 
-    public Caja(int idCaja, String codigoPedido, double monto, String metodoPago, Date fecha, String tipoMovimiento) {
+    public Caja(int idCaja, String codigoPedido, double monto, String metodoPago, LocalDateTime fecha, String tipoMovimiento) {
         this.idCaja = idCaja;
         this.codigoPedido = codigoPedido;
         this.monto = monto;
@@ -35,7 +35,7 @@ public class Caja {
         return metodoPago;
     }
 
-    public Date getFecha() {
+    public LocalDateTime getFecha() {
         return fecha;
     }
 

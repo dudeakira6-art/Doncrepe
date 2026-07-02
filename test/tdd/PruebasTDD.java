@@ -6,9 +6,9 @@ import controlador.PedidosController;
 import controlador.ProductosController;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import dao.IMesaDAO;
 import dao.IPedidoDAO;
 import modelo.Caja;
@@ -105,8 +105,8 @@ public class PruebasTDD {
 
     private void debeSumarMovimientosDeCaja() {
         List<Caja> movimientos = new ArrayList<Caja>();
-        movimientos.add(new Caja(1, "P-001", 34.00, "Efectivo", new Date(), "VENTA"));
-        movimientos.add(new Caja(2, "P-002", 20.00, "Tarjeta", new Date(), "VENTA"));
+        movimientos.add(new Caja(1, "P-001", 34.00, "Efectivo", LocalDateTime.now(), "VENTA"));
+        movimientos.add(new Caja(2, "P-002", 20.00, "Tarjeta", LocalDateTime.now(), "VENTA"));
 
         double total = new HistorialCajaController(null).sumarMovimientos(movimientos);
 
@@ -115,7 +115,7 @@ public class PruebasTDD {
 
     private void debeExportarCajaConApachePOI() {
         List<Caja> movimientos = new ArrayList<Caja>();
-        movimientos.add(new Caja(1, "P-001", 34.00, "Efectivo", new Date(), "VENTA"));
+        movimientos.add(new Caja(1, "P-001", 34.00, "Efectivo", LocalDateTime.now(), "VENTA"));
         File carpeta = new File("build/test/reportes");
         File archivo = new File(carpeta, "caja_tdd.xlsx");
 
@@ -133,9 +133,9 @@ public class PruebasTDD {
     private void debeGenerarComprobantePdf() {
         List<DetallePedido> detalles = new ArrayList<DetallePedido>();
         detalles.add(new DetallePedido(new Producto(1, "Crepe de Fresa", "Crepe", 12.00, "", true), 2));
-        Pedido pedido = new Pedido(1, "P-TDD", "Cliente TDD", 24.00, "Efectivo", "COMPLETADO", new Date(), 1);
+        Pedido pedido = new Pedido(1, "P-TDD", "Cliente TDD", 24.00, "Efectivo", "COMPLETADO", LocalDateTime.now(), 1);
         File carpeta = new File("build/test/comprobantes");
-        Comprobante comprobante = new Comprobante(0, 1, Comprobante.BOLETA_DNI, "B001-TDD", "Cliente TDD", "12345678", "", "", "", "B001-TDD.pdf", new Date());
+        Comprobante comprobante = new Comprobante(0, 1, Comprobante.BOLETA_DNI, "B001-TDD", "Cliente TDD", "12345678", "", "", "", "B001-TDD.pdf", LocalDateTime.now());
         File archivo = new File(carpeta, "B001-TDD.pdf");
 
         try {

@@ -47,13 +47,15 @@ public class PedidosPanel extends JPanel {
     private static final String FUENTE = "Segoe UI";
     private static final String ESTADO_COMPLETADO = "COMPLETADO";
     private static final String TIPO_FACTURA = "Factura";
-    private static final String CATEGORIA_BEBIDA = "bebida";
+    private static final String CATEGORIA_DULCE = "Crepe dulce";
+    private static final String CATEGORIA_SALADO = "Crepe salado";
+    private static final String CATEGORIA_BEBIDA = "Bebida";
     private static final String CARPETA_COMPROBANTES = "reportes/comprobantes";
     private static final String TEXTO_COMPROBANTE = "Comprobante";
     private final transient Usuario usuario;
     private final transient Runnable alGuardar;
     private final transient PedidosController controller = new PedidosController();
-    private final DefaultTableModel model = new DefaultTableModel(new Object[]{"Pedido", "Cliente", "Mesa", "Total", "Método de Pago", "Estado"}, 0);
+    private final DefaultTableModel model = new DefaultTableModel(new Object[]{"Pedido", "Cliente", "Mesa", "Total", "MÃ©todo de Pago", "Estado"}, 0);
     private JTable tablaPedidos;
     private JButton btnComprobante;
 
@@ -123,7 +125,7 @@ public class PedidosPanel extends JPanel {
                 model.addRow(new Object[]{p.getCodigo(), p.getCliente(), mesa, "S/ " + String.format("%.2f", p.getTotal()), p.getMetodoPago(), p.getEstado()});
             }
         } catch (SQLException ex) {
-            model.addRow(new Object[]{"Sin conexión", ex.getMessage(), "", "", "", ""});
+            model.addRow(new Object[]{"Sin conexiÃ³n", ex.getMessage(), "", "", "", ""});
         }
         actualizarBotonComprobante();
     }
@@ -169,8 +171,8 @@ public class PedidosPanel extends JPanel {
             total.setForeground(Estilos.ROSA_NEON);
 
             JTabbedPane tabs = new JTabbedPane();
-                        tabs.add("Crepés dulces", crearTabProductos(productos, "crepe dulce", cantidad, detalles, detalleModel, total));
-                        tabs.add("Crepés salados", crearTabProductos(productos, "crepe salado", cantidad, detalles, detalleModel, total));
+                        tabs.add("Crepés dulces", crearTabProductos(productos, CATEGORIA_DULCE, cantidad, detalles, detalleModel, total));
+                        tabs.add("Crepés salados", crearTabProductos(productos, CATEGORIA_SALADO, cantidad, detalles, detalleModel, total));
             tabs.add("Bebidas", crearTabProductos(productos, CATEGORIA_BEBIDA, cantidad, detalles, detalleModel, total));
 
             RoundedPanel panel = new RoundedPanel(18, Estilos.BLANCO, false);
@@ -268,7 +270,6 @@ public class PedidosPanel extends JPanel {
         }
         try {
             Pedido pedido = controller.buscarPedido(codigo);
-            List<DetallePedido> detalles = controller.listarDetalles(codigo);
             ResultadoComprobante resultado = mostrarDialogoPago(pedido);
             if (resultado == null) {
                 return;
@@ -314,14 +315,14 @@ public class PedidosPanel extends JPanel {
         gc.gridx = 0;
         gc.gridy = 0;
         gc.weightx = 0;
-        cabecera.add(labelFormulario("Método de pago"), gc);
+        cabecera.add(labelFormulario("MÃ©todo de pago"), gc);
         gc.gridx = 1;
         gc.weightx = 1;
         cabecera.add(metodo, gc);
         gc.gridx = 0;
         gc.gridy = 1;
         gc.weightx = 0;
-        cabecera.add(labelFormulario("Comprobante"), gc);
+        cabecera.add(labelFormulario(TEXTO_COMPROBANTE), gc);
         gc.gridx = 1;
         gc.weightx = 1;
         cabecera.add(tipo, gc);
@@ -352,7 +353,7 @@ public class PedidosPanel extends JPanel {
         JLabel qrTitulo = new JLabel("Yape QR", javax.swing.SwingConstants.CENTER);
         qrTitulo.setFont(new Font(FUENTE, Font.BOLD, 15));
         qrTitulo.setForeground(Estilos.ROSA_NEON);
-        JLabel qr = new JLabel(Recursos.imagen("Código_QR.jpg", 170, 170));
+        JLabel qr = new JLabel(Recursos.imagen("CÃ³digo_QR.jpg", 170, 170));
         qr.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         JLabel qrSubtitulo = new JLabel("<html><div style='text-align:center;'>Se muestra solo al elegir Yape</div></html>", javax.swing.SwingConstants.CENTER);
         qrSubtitulo.setFont(new Font(FUENTE, Font.PLAIN, 12));
@@ -424,7 +425,7 @@ public class PedidosPanel extends JPanel {
         String codigo = tablaPedidos.getValueAt(fila, 0).toString();
         String estado = tablaPedidos.getValueAt(fila, 5).toString();
         if (!ESTADO_COMPLETADO.equalsIgnoreCase(estado)) {
-            mensaje("El pedido todavía no tiene comprobante porque está pendiente.");
+            mensaje("El pedido todavÃ­a no tiene comprobante porque estÃ¡ pendiente.");
             return;
         }
         try {
@@ -533,11 +534,11 @@ public class PedidosPanel extends JPanel {
         c.gridy = 3;
         panel.add(campoTexto(ruc), c);
         c.gridy = 4;
-        panel.add(labelFormulario("Razón social"), c);
+        panel.add(labelFormulario("RazÃ³n social"), c);
         c.gridy = 5;
         panel.add(campoTexto(razon), c);
         c.gridy = 6;
-        panel.add(labelFormulario("Dirección"), c);
+        panel.add(labelFormulario("DirecciÃ³n"), c);
         c.gridy = 7;
         panel.add(campoTexto(direccion), c);
         return panel;
@@ -549,7 +550,7 @@ public class PedidosPanel extends JPanel {
             return;
         }
         String codigo = tablaPedidos.getValueAt(fila, 0).toString();
-        int ok = JOptionPane.showConfirmDialog(this, "¿Eliminar el pedido " + codigo + "?", "Confirmar", JOptionPane.YES_NO_OPTION);
+        int ok = JOptionPane.showConfirmDialog(this, "Â¿Eliminar el pedido " + codigo + "?", "Confirmar", JOptionPane.YES_NO_OPTION);
         if (ok != JOptionPane.YES_OPTION) {
             return;
         }
@@ -565,13 +566,13 @@ public class PedidosPanel extends JPanel {
 
     private String categoriaClave(String categoria) {
         String valor = categoria == null ? "" : categoria.trim().toLowerCase();
-        if (valor.contains(CATEGORIA_BEBIDA)) {
+        if (valor.contains(CATEGORIA_BEBIDA.toLowerCase())) {
             return CATEGORIA_BEBIDA;
         }
         if (valor.contains("salado")) {
-            return "crepe salado";
+            return CATEGORIA_SALADO;
         }
-        return "crepe dulce";
+        return CATEGORIA_DULCE;
     }
 
     private String tipoComprobante(String visible) {
@@ -585,7 +586,7 @@ public class PedidosPanel extends JPanel {
     }
 
     private void mensaje(String texto) {
-        JOptionPane.showMessageDialog(this, panelMensaje(texto, false), "Don Crepé", JOptionPane.PLAIN_MESSAGE);
+        JOptionPane.showMessageDialog(this, panelMensaje(texto, false), "Don CrepÃ©", JOptionPane.PLAIN_MESSAGE);
     }
 
     private void mensajeError(String texto) {
@@ -628,6 +629,7 @@ public class PedidosPanel extends JPanel {
         }
     }
 }
+
 
 
 
