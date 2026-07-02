@@ -24,8 +24,8 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Compile project
-        run: ant -noinput compile-tests
+      - name: Generate coverage report
+        run: ant -noinput coverage
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v7

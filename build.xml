@@ -66,5 +66,16 @@
         </java>
     </target>
 
+    <target name="coverage" depends="compile-tests">
+        <mkdir dir="${build.dir}/reports/jacoco"/>
+        <java classname="tdd.CoberturaTDD" fork="true" failonerror="true">
+            <classpath>
+                <path refid="project.classpath"/>
+                <pathelement path="${classes.dir}"/>
+                <pathelement path="${test.classes.dir}"/>
+            </classpath>
+        </java>
+    </target>
+
     <target name="run-test-with-main" depends="test"/>
 </project>

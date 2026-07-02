@@ -1,20 +1,27 @@
 package tdd;
 
 import controlador.HistorialCajaController;
+import controlador.MesasController;
 import controlador.PedidosController;
 import controlador.ProductosController;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.sql.SQLException;
+import dao.IMesaDAO;
+import dao.IPedidoDAO;
 import modelo.Caja;
 import modelo.Comprobante;
 import modelo.DetallePedido;
 import modelo.Pedido;
+import modelo.Mesa;
 import modelo.Producto;
+import modelo.Usuario;
 import servicio.CalculadoraPedido;
 import servicio.ComprobanteService;
 import servicio.ReporteCajaExcelService;
+import util.SeguridadPassword;
 
 public class PruebasTDD {
     private int pruebasEjecutadas = 0;
@@ -33,6 +40,9 @@ public class PruebasTDD {
         pruebas.debeValidarDatosDeFactura();
         pruebas.debePermitirBoletaSimpleSinDatos();
         pruebas.debeRequerirNombreYDniParaBoletaDni();
+        pruebas.debeUsarSeguridadPassword();
+        pruebas.debeAlternarEstadoDeMesa();
+        pruebas.debeExponerUsuario();
         System.out.println("TDD OK - pruebas ejecutadas: " + pruebas.pruebasEjecutadas);
     }
 
@@ -172,6 +182,76 @@ public class PruebasTDD {
         } catch (IllegalArgumentException ex) {
             assertTrue(ex.getMessage().contains("DNI"), "La boleta con DNI debe exigir DNI de 8 digitos.");
         }
+    }
+
+    private void debeUsarSeguridadPassword() {
+        String hash = SeguridadPassword.encriptar("admin", "1234");
+        assertTrue(SeguridadPassword.coincide("admin", "1234", hash), "La contraseña debe coincidir con su hash.");
+        assertTrue("Gerente".equals(SeguridadPassword.normalizarRol("admin", "Empleado")), "Admin debe mapear a Gerente.");
+        assertTrue("Empleado".equals(SeguridadPassword.normalizarRol("empleado", "Gerente")), "Empleado debe mapear a Empleado.");
+    }
+
+    private void debeAlternarEstadoDeMesa() {
+        IMesaDAO mesaDAO = new IMesaDAO() {
+            private String ultimoEstado;
+
+            @Override
+            public List<Mesa> listar() throws SQLException {
+                return new ArrayList<Mesa>();
+            }
+
+            @Override
+            public void cambiarEstado(int idMesa, String estado) throws SQLException {
+                ultimoEstado = estado;
+            }
+        };
+        IPedidoDAO pedidoDAO = new IPedidoDAO() {
+            @Override public List<Pedido> listarRecientes() { return new ArrayList<Pedido>(); }
+            @Override public Pedido buscarPorCodigo(String codigo) { return null; }
+            @Override public List<DetallePedido> listarDetalles(String codigo) { return new ArrayList<DetallePedido>(); }
+            @Override public boolean existePedidoPendienteMesa(int idMesa) { return false; }
+            @Override public int pedidosHoy() { return 0; }
+            @Override public int pedidosPendientes() { return 0; }
+            @Override public double ventasHoy() { return 0; }
+            @Override public void crearPedido(int idUsuario, int idMesa, String cliente, String metodoPago, List<DetallePedido> detalles) { }
+            @Override public void registrarPago(String codigo, String metodoPago, Comprobante comprobante) { }
+            @Override public Comprobante buscarComprobantePorPedido(String codigo) { return null; }
+            @Override public void eliminarPorCodigo(String codigo) { }
+        };
+        MesasController controller = new MesasController(mesaDAO, pedidoDAO);
+        try {
+            String estado = controller.alternarEstado(new Mesa(1, 1, "LIBRE"));
+            assertTrue("OCUPADO".equals(estado), "Una mesa libre debe pasar a ocupada.");
+        } catch (Exception ex) {
+            throw new AssertionError("No se esperaba error al alternar estado de mesa: " + ex.getMessage());
+        }
+
+        MesasController controllerConPendiente = new MesasController(mesaDAO, new IPedidoDAO() {
+            @Override public List<Pedido> listarRecientes() { return new ArrayList<Pedido>(); }
+            @Override public Pedido buscarPorCodigo(String codigo) { return null; }
+            @Override public List<DetallePedido> listarDetalles(String codigo) { return new ArrayList<DetallePedido>(); }
+            @Override public boolean existePedidoPendienteMesa(int idMesa) { return true; }
+            @Override public int pedidosHoy() { return 0; }
+            @Override public int pedidosPendientes() { return 0; }
+            @Override public double ventasHoy() { return 0; }
+            @Override public void crearPedido(int idUsuario, int idMesa, String cliente, String metodoPago, List<DetallePedido> detalles) { }
+            @Override public void registrarPago(String codigo, String metodoPago, Comprobante comprobante) { }
+            @Override public Comprobante buscarComprobantePorPedido(String codigo) { return null; }
+            @Override public void eliminarPorCodigo(String codigo) { }
+        });
+        try {
+            controllerConPendiente.alternarEstado(new Mesa(1, 1, "OCUPADO"));
+            throw new AssertionError("Se esperaba error si la mesa tiene pedido pendiente.");
+        } catch (IllegalArgumentException ex) {
+            assertTrue(ex.getMessage().contains("pedido pendiente"), "La mesa no debe liberarse con pedido pendiente.");
+        } catch (Exception ex) {
+            throw new AssertionError("No se esperaba otro tipo de error: " + ex.getMessage());
+        }
+    }
+
+    private void debeExponerUsuario() {
+        Usuario usuario = new Usuario(1, "Milo Perez", "milo", "Empleado");
+        assertTrue("milo".equals(usuario.getUsuario()), "El usuario debe exponer su nombre de usuario.");
     }
 
     private void assertDouble(double esperado, double actual, String mensaje) {
