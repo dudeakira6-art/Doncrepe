@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.security.Provider;
 import java.security.Security;
 import dao.IMesaDAO;
@@ -279,7 +280,7 @@ public class PruebasTDD {
     }
 
     private void debeCubrirModelosBasicos() {
-        LocalDateTime fecha = LocalDateTime.of(2026, 7, 2, 13, 45);
+        LocalDateTime fecha = LocalDateTime.of(2026, Month.JULY, 2, 13, 45);
         Producto producto = new Producto(7, "Crepe de Fresa", "Crepe dulce", 12.50, "fresa.png", true);
         assertTrue(producto.getIdProducto() == 7, "El producto debe exponer su id.");
         assertTrue("Crepe de Fresa".equals(producto.getNombre()), "El producto debe exponer su nombre.");
@@ -358,7 +359,7 @@ public class PruebasTDD {
 
     private void debeCubrirVistasDeComprobante() {
         ComprobanteService service = new ComprobanteService();
-        LocalDateTime fecha = LocalDateTime.of(2026, 7, 2, 14, 10);
+        LocalDateTime fecha = LocalDateTime.of(2026, Month.JULY, 2, 14, 10);
         Producto productoLargo = new Producto(20, "Crepe de Nutella con Fresas, Platanos y Salsa Especial", "Crepe dulce", 18.00, "crepe.png", true);
         List<DetallePedido> detalles = new ArrayList<DetallePedido>();
         detalles.add(new DetallePedido(productoLargo, 2));
@@ -411,7 +412,7 @@ public class PruebasTDD {
 
     private void debeCubrirErroresDeComprobanteService() {
         ComprobanteService service = new ComprobanteService();
-        LocalDateTime fecha = LocalDateTime.of(2026, 7, 2, 15, 0);
+        LocalDateTime fecha = LocalDateTime.of(2026, Month.JULY, 2, 15, 0);
         Pedido pedido = new Pedido(4, "P-ERR", "Cliente", 10.00, "Efectivo", "PENDIENTE", fecha);
         pedido.setMesaNumero(1);
         List<DetallePedido> detalles = new ArrayList<DetallePedido>();

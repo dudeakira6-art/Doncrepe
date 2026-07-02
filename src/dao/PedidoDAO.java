@@ -176,8 +176,7 @@ public class PedidoDAO implements IPedidoDAO {
             if (cn != null) {
                 cn.rollback();
             }
-            LOGGER.error("No se pudo guardar el pedido {}.", codigo, ex);
-            throw new SQLException("No se pudo guardar el pedido " + codigo + ".", ex);
+            throw rethrowConContexto("crear el pedido", codigo, ex);
         } finally {
             if (cn != null) {
                 cn.setAutoCommit(true);
@@ -256,8 +255,7 @@ public class PedidoDAO implements IPedidoDAO {
             if (cn != null) {
                 cn.rollback();
             }
-            LOGGER.error("No se pudo registrar el pago del pedido {}.", codigo, ex);
-            throw new SQLException("No se pudo registrar el pago del pedido " + codigo + ".", ex);
+            throw rethrowConContexto("registrar el pago del pedido", codigo, ex);
         } finally {
             if (cn != null) {
                 cn.setAutoCommit(true);
@@ -338,8 +336,7 @@ public class PedidoDAO implements IPedidoDAO {
             if (cn != null) {
                 cn.rollback();
             }
-            LOGGER.error("No se pudo eliminar el pedido {}.", codigo, ex);
-            throw new SQLException("No se pudo eliminar el pedido " + codigo + ".", ex);
+            throw rethrowConContexto("eliminar el pedido", codigo, ex);
         } finally {
             if (cn != null) {
                 cn.setAutoCommit(true);
@@ -404,6 +401,12 @@ public class PedidoDAO implements IPedidoDAO {
         comprobante.setRazonSocial(rs.getString("razon_social"));
         comprobante.setDireccion(rs.getString("direccion"));
         return comprobante;
+    }
+
+    private SQLException rethrowConContexto(String operacion, String codigo, SQLException ex) {
+        String mensaje = "PedidoDAO." + operacion + ": no se pudo procesar el pedido " + codigo + ".";
+        LOGGER.error(mensaje, ex);
+        return new SQLException(mensaje, ex);
     }
 
     private LocalDateTime toLocalDateTime(ResultSet rs, String columna) throws SQLException {
