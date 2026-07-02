@@ -7,6 +7,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -101,7 +103,6 @@ public class HistorialCajaPanel extends JPanel {
 
     private void cargar() {
         model.setRowCount(0);
-        double suma = 0;
         try {
             String desde = formatoSql(fechaDesde.getValue());
             String hasta = formatoSql(fechaHasta.getValue());
@@ -115,9 +116,9 @@ public class HistorialCajaPanel extends JPanel {
                     c.getTipoMovimiento()
                 });
             }
-            suma = controller.sumarMovimientos(movimientos);
+            double suma = controller.sumarMovimientos(movimientos);
             total.setText("Total: S/ " + String.format("%.2f", suma));
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             model.addRow(new Object[]{"Sin conexión", ex.getMessage(), "", "", ""});
         }
     }
@@ -132,7 +133,7 @@ public class HistorialCajaPanel extends JPanel {
         try {
             ResultadoComprobante resultado = pedidosController.obtenerComprobante(codigo);
             ComprobanteDialog.mostrar(this, resultado.getPedido(), resultado.getDetalles(), resultado.getComprobante(), resultado.getArchivoPdf());
-        } catch (Exception ex) {
+        } catch (SQLException | IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(this, "No se pudo abrir el comprobante:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -143,7 +144,7 @@ public class HistorialCajaPanel extends JPanel {
             String hasta = formatoSql(fechaHasta.getValue());
             File archivo = controller.exportarExcel(desde, hasta, new File("reportes"));
             JOptionPane.showMessageDialog(this, "Reporte exportado correctamente:\n" + archivo.getAbsolutePath());
-        } catch (Exception ex) {
+        } catch (SQLException | IOException | IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(this, "No se pudo exportar el reporte:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }

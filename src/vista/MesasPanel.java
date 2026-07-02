@@ -3,6 +3,7 @@ package vista;
 import controlador.MesasController;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.function.Consumer;
 import javax.swing.BorderFactory;
@@ -60,7 +61,7 @@ public class MesasPanel extends JPanel {
                 });
                 grilla.add(card);
             }
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, "No se pudieron cargar mesas:\n" + ex.getMessage());
         }
     }
@@ -68,13 +69,15 @@ public class MesasPanel extends JPanel {
     private void cambiarEstado(Mesa mesa) {
         String nuevo = "LIBRE".equalsIgnoreCase(mesa.getEstado()) ? "OCUPADO" : "LIBRE";
         if ("OCUPADO".equals(nuevo) && alOcuparMesa != null) {
-            int abrir = JOptionPane.showConfirmDialog(this, "¿Crear un pedido para la Mesa " + mesa.getNumero() + "?", "Mesas", JOptionPane.YES_NO_OPTION);
+            int abrir = JOptionPane.showConfirmDialog(this,
+                    "¿Crear un pedido para la Mesa " + mesa.getNumero() + "?", "Mesas", JOptionPane.YES_NO_OPTION);
             if (abrir == JOptionPane.YES_OPTION) {
                 alOcuparMesa.accept(mesa);
             }
             return;
         }
-        int ok = JOptionPane.showConfirmDialog(this, "¿Cambiar Mesa " + mesa.getNumero() + " a " + nuevo + "?", "Mesas", JOptionPane.YES_NO_OPTION);
+        int ok = JOptionPane.showConfirmDialog(this,
+                "¿Cambiar Mesa " + mesa.getNumero() + " a " + nuevo + "?", "Mesas", JOptionPane.YES_NO_OPTION);
         if (ok != JOptionPane.YES_OPTION) {
             return;
         }
@@ -83,7 +86,7 @@ public class MesasPanel extends JPanel {
             cargar();
             revalidate();
             repaint();
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, "No se pudo cambiar estado:\n" + ex.getMessage());
         }
     }

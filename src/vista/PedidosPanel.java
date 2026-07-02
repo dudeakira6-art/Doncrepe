@@ -11,6 +11,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -114,7 +116,7 @@ public class PedidosPanel extends JPanel {
                 String mesa = p.getMesaNumero() == 0 ? "Delivery" : "Mesa " + p.getMesaNumero();
                 model.addRow(new Object[]{p.getCodigo(), p.getCliente(), mesa, "S/ " + String.format("%.2f", p.getTotal()), p.getMetodoPago(), p.getEstado()});
             }
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             model.addRow(new Object[]{"Sin conexión", ex.getMessage(), "", "", "", ""});
         }
         actualizarBotonComprobante();
@@ -204,7 +206,7 @@ public class PedidosPanel extends JPanel {
             mensaje("Pedido agregado correctamente.");
             cargar();
             notificarCambios();
-        } catch (Exception ex) {
+        } catch (SQLException | IllegalArgumentException ex) {
             mensajeError("No se pudo crear pedido:\n" + ex.getMessage());
         }
     }
@@ -262,12 +264,12 @@ public class PedidosPanel extends JPanel {
             cargar();
             notificarCambios();
             ComprobanteDialog.mostrar(this, resultado.getPedido(), resultado.getDetalles(), resultado.getComprobante(), resultado.getArchivoPdf());
-        } catch (Exception ex) {
+        } catch (SQLException | IOException | IllegalArgumentException ex) {
             mensajeError("No se pudo procesar el pago:\n" + ex.getMessage());
         }
     }
 
-    private ResultadoComprobante mostrarDialogoPago(Pedido pedido, List<DetallePedido> detalles) throws Exception {
+    private ResultadoComprobante mostrarDialogoPago(Pedido pedido, List<DetallePedido> detalles) throws SQLException, IOException {
         JComboBox<String> metodo = new JComboBox<String>(new String[]{"Efectivo", "Tarjeta", "Yape"});
         JComboBox<String> tipo = new JComboBox<String>(new String[]{"Boleta simple", "Boleta con DNI", "Factura"});
         JCheckBox confirmado = new JCheckBox("Confirmo que el pago fue recibido/aprobado");
@@ -399,7 +401,7 @@ public class PedidosPanel extends JPanel {
         try {
             ResultadoComprobante resultado = controller.obtenerComprobante(codigo);
             ComprobanteDialog.mostrar(this, resultado.getPedido(), resultado.getDetalles(), resultado.getComprobante(), resultado.getArchivoPdf());
-        } catch (Exception ex) {
+        } catch (SQLException | IllegalArgumentException ex) {
             mensajeError("No se pudo abrir el comprobante:\n" + ex.getMessage());
         }
     }
@@ -430,7 +432,7 @@ public class PedidosPanel extends JPanel {
             }
             btnComprobante.setText(Comprobante.FACTURA.equals(comprobante.getTipo()) ? "Factura" : "Boleta");
             btnComprobante.setEnabled(true);
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             btnComprobante.setText("Comprobante");
             btnComprobante.setEnabled(false);
         }
@@ -527,7 +529,7 @@ public class PedidosPanel extends JPanel {
             mensaje("Pedido eliminado correctamente.");
             cargar();
             notificarCambios();
-        } catch (Exception ex) {
+        } catch (SQLException | IllegalArgumentException ex) {
             mensajeError("No se pudo eliminar el pedido:\n" + ex.getMessage());
         }
     }
@@ -597,6 +599,9 @@ public class PedidosPanel extends JPanel {
         }
     }
 }
+
+
+
 
 
 

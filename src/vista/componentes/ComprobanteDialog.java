@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import javax.swing.BorderFactory;
@@ -57,7 +58,7 @@ public final class ComprobanteDialog {
             } else {
                 throw new IllegalStateException("La impresión del sistema no está disponible.");
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             JOptionPane.showMessageDialog(parent, "No se pudo imprimir o abrir el PDF:\n" + ex.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -72,7 +73,7 @@ public final class ComprobanteDialog {
         try {
             Files.copy(archivoPdf.toPath(), chooser.getSelectedFile().toPath(), StandardCopyOption.REPLACE_EXISTING);
             JOptionPane.showMessageDialog(parent, "PDF guardado correctamente.");
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             JOptionPane.showMessageDialog(parent, "No se pudo guardar el PDF:\n" + ex.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
         }

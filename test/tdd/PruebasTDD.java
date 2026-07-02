@@ -75,7 +75,7 @@ public class PruebasTDD {
 
         try {
             controller.guardarProducto(producto);
-            throw new AssertionError("Se esperaba error por precio invalido.");
+            throw new AssertionError("Se esperaba error por precio inválido.");
         } catch (IllegalArgumentException ex) {
             assertTrue(ex.getMessage().contains("precio"), "El mensaje debe mencionar el precio.");
         } catch (Exception ex) {
@@ -89,7 +89,7 @@ public class PruebasTDD {
         Producto normalizado = controller.normalizarProducto(producto);
 
         assertTrue("Crepe De Nutella".equals(normalizado.getNombre()), "Apache Commons debe limpiar y capitalizar el producto.");
-        assertTrue("Crepe Dulce".equals(normalizado.getCategoria()), "Apache Commons debe limpiar y capitalizar la categoria.");
+        assertTrue("Crepe Dulce".equals(normalizado.getCategoria()), "Apache Commons debe limpiar y capitalizar la categoría.");
         assertTrue("img.png".equals(normalizado.getImagen()), "Apache Commons debe limpiar la ruta de imagen.");
     }
 
@@ -150,7 +150,7 @@ public class PruebasTDD {
         PedidosController controller = new PedidosController(null, null, null, new CalculadoraPedido());
         try {
             controller.validarDatosComprobante(Comprobante.FACTURA, "", "", "123", "", "");
-            throw new AssertionError("Se esperaba error por RUC invalido.");
+            throw new AssertionError("Se esperaba error por RUC inválido.");
         } catch (IllegalArgumentException ex) {
             assertTrue(ex.getMessage().contains("RUC"), "La factura debe validar RUC.");
         } catch (Exception ex) {
@@ -178,7 +178,7 @@ public class PruebasTDD {
         }
         try {
             controller.validarDatosComprobante(Comprobante.BOLETA_DNI, "Cliente TDD", "123", "", "", "");
-            throw new AssertionError("Se esperaba error por DNI invalido en boleta con DNI.");
+            throw new AssertionError("Se esperaba error por DNI inválido en boleta con DNI.");
         } catch (IllegalArgumentException ex) {
             assertTrue(ex.getMessage().contains("DNI"), "La boleta con DNI debe exigir DNI de 8 digitos.");
         }
@@ -268,4 +268,5 @@ public class PruebasTDD {
         }
     }
 }
+
 

@@ -4,6 +4,7 @@ import controlador.ProductosController;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.sql.SQLException;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -53,10 +54,10 @@ public class ProductosPanel extends JPanel {
         tabs.removeAll();
         try {
             List<Producto> productos = controller.listarProductos();
-                        tabs.add("Crepés dulces", crearScrollCategoria(productos, "crepe dulce"));
-                        tabs.add("Crepés salados", crearScrollCategoria(productos, "crepe salado"));
+            tabs.add("Crepés dulces", crearScrollCategoria(productos, "crepe dulce"));
+            tabs.add("Crepés salados", crearScrollCategoria(productos, "crepe salado"));
             tabs.add("Bebidas", crearScrollCategoria(productos, "bebida"));
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             JPanel error = new JPanel();
             error.setOpaque(false);
             error.add(new JLabel("No se pudieron cargar productos: " + ex.getMessage()));
@@ -103,7 +104,8 @@ public class ProductosPanel extends JPanel {
 
     private void mostrarFormulario(Producto producto) {
         JTextField nombre = new JTextField(producto == null ? "" : producto.getNombre());
-        javax.swing.JComboBox<String> categoria = new javax.swing.JComboBox<String>(new String[]{"Crepe dulce", "Crepe salado", "Bebida"});
+        javax.swing.JComboBox<String> categoria = new javax.swing.JComboBox<String>(
+                new String[]{"Crepe dulce", "Crepe salado", "Bebida"});
         JTextField precio = new JTextField(producto == null ? "" : String.valueOf(producto.getPrecio()));
         JTextField imagen = new JTextField(producto == null ? "" : producto.getImagen());
         categoria.setSelectedItem(categoriaNormalizada(producto == null ? "Crepe dulce" : producto.getCategoria()));
@@ -125,14 +127,18 @@ public class ProductosPanel extends JPanel {
 
         try {
             double valor = Double.parseDouble(precio.getText().trim());
-            if (producto == null) {
-                controller.guardarProducto(new Producto(0, nombre.getText().trim(), categoria.getSelectedItem().toString().trim(), valor, imagen.getText().trim(), true));
-            } else {
-                Producto actualizado = new Producto(producto.getIdProducto(), nombre.getText().trim(), categoria.getSelectedItem().toString().trim(), valor, imagen.getText().trim(), true);
-                controller.guardarProducto(actualizado);
-            }
+            Producto nuevo = new Producto(
+                    producto == null ? 0 : producto.getIdProducto(),
+                    nombre.getText().trim(),
+                    categoria.getSelectedItem().toString().trim(),
+                    valor,
+                    imagen.getText().trim(),
+                    true);
+            controller.guardarProducto(nuevo);
             cargar();
-        } catch (Exception ex) {
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Ingrese un precio válido.");
+        } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, "No se pudo guardar producto:\n" + ex.getMessage());
         }
     }
@@ -145,7 +151,7 @@ public class ProductosPanel extends JPanel {
         try {
             controller.eliminarProducto(producto);
             cargar();
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, "No se pudo eliminar:\n" + ex.getMessage());
         }
     }

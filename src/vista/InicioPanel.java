@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.function.Consumer;
 import javax.swing.BorderFactory;
@@ -78,12 +79,12 @@ public class InicioPanel extends JPanel {
         JPanel resumen = new JPanel(new GridLayout(1, 4, 14, 14));
         resumen.setOpaque(false);
         try {
-            resumen.add(tarjeta("Ventas del dia", "S/ " + String.format("%.2f", controller.ventasHoy()), NeonIcon.CASH));
+            resumen.add(tarjeta("Ventas del día", "S/ " + String.format("%.2f", controller.ventasHoy()), NeonIcon.CASH));
             resumen.add(tarjeta("Caja actual", "S/ " + String.format("%.2f", controller.cajaActual()), NeonIcon.EXCEL));
             resumen.add(tarjeta("Pedidos hoy", String.valueOf(controller.pedidosHoy()), NeonIcon.ORDER));
             resumen.add(tarjeta("Pendientes", String.valueOf(controller.pedidosPendientes()), NeonIcon.ORDER));
-        } catch (Exception ex) {
-            resumen.add(tarjeta("MySQL", "Sin conexion", NeonIcon.CASH));
+        } catch (SQLException ex) {
+            resumen.add(tarjeta("MySQL", "Sin conexión", NeonIcon.CASH));
             resumen.add(tarjeta("Revise", "README", NeonIcon.ORDER));
             resumen.add(tarjeta("Usuario", "admin", NeonIcon.USER));
             resumen.add(tarjeta("Clave", "admin", NeonIcon.LOCK));
@@ -168,8 +169,8 @@ public class InicioPanel extends JPanel {
                 String mesa = p.getMesaNumero() == 0 ? "Delivery" : "Mesa " + p.getMesaNumero();
                 model.addRow(new Object[]{p.getCodigo(), mesa, formatearFecha(p.getFecha()), "S/ " + String.format("%.2f", p.getTotal()), p.getEstado()});
             }
-        } catch (Exception ex) {
-            model.addRow(new Object[]{"Sin conexion a MySQL", "-", "-", "-", ex.getMessage()});
+        } catch (SQLException ex) {
+            model.addRow(new Object[]{"Sin conexión a MySQL", "-", "-", "-", ex.getMessage()});
         }
         JTable tabla = new JTable(model);
         Estilos.estilizarTabla(tabla);

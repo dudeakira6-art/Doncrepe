@@ -2,6 +2,7 @@ package doncrepepos;
 
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import vista.LoginFrame;
 
 public class Main {
@@ -11,7 +12,7 @@ public class Main {
             public void run() {
                 try {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                } catch (Exception ex) {
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
                     System.err.println("No se pudo aplicar LookAndFeel: " + ex.getMessage());
                 }
                 new LoginFrame().setVisible(true);
