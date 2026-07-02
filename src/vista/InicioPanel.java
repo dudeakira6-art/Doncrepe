@@ -28,9 +28,11 @@ import vista.componentes.NeonIcon;
 import vista.componentes.RoundedPanel;
 
 public class InicioPanel extends JPanel {
-    private transient final Usuario usuario;
-    private transient final Consumer<String> navegar;
-    private transient final InicioController controller = new InicioController();
+    private static final String FUENTE = "Segoe UI";
+    private static final String DESTINO_PEDIDO = "Pedido";
+    private final transient Usuario usuario;
+    private final transient Consumer<String> navegar;
+    private final transient InicioController controller = new InicioController();
     private static final DateTimeFormatter FECHA_CABECERA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter FECHA_ACTIVIDAD = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
@@ -53,7 +55,7 @@ public class InicioPanel extends JPanel {
         JLabel saludo = new JLabel("Bienvenido, " + usuario.getNombre() + "!");
         saludo.setFont(Estilos.fuenteTitulo());
         saludo.setForeground(Estilos.TEXTO);
-        JLabel fecha = new JLabel(LocalDate.now().format(FECHA_CABECERA));
+        JLabel fecha = new JLabel(LocalDate.now(ZoneId.systemDefault()).format(FECHA_CABECERA));
         fecha.setOpaque(true);
         fecha.setForeground(Estilos.ROSA_NEON);
         fecha.setBackground(Estilos.BLANCO);
@@ -95,14 +97,14 @@ public class InicioPanel extends JPanel {
     private JPanel crearAccesosRapidos() {
         JPanel contenedor = new JPanel(new BorderLayout(0, 8));
         contenedor.setOpaque(false);
-        JLabel titulo = new JLabel("Acceso rapido");
+        JLabel titulo = new JLabel("Acceso rápido");
         titulo.setFont(Estilos.fuenteSubtitulo());
         titulo.setForeground(Estilos.TEXTO);
         JPanel accesos = new JPanel(new GridLayout(1, 3, 14, 14));
         accesos.setOpaque(false);
         accesos.add(tarjetaAcceso("Mesa", "Administrar mesas", NeonIcon.TABLE, "Mesa"));
         accesos.add(tarjetaAcceso("Productos", "Gestionar productos", NeonIcon.PRODUCT, "Producto"));
-        accesos.add(tarjetaAcceso("Pedido", "Gestionar pedidos", NeonIcon.ORDER, "Pedido"));
+        accesos.add(tarjetaAcceso(DESTINO_PEDIDO, "Gestionar pedidos", NeonIcon.ORDER, DESTINO_PEDIDO));
         contenedor.add(titulo, BorderLayout.NORTH);
         contenedor.add(accesos, BorderLayout.CENTER);
         return contenedor;
@@ -116,10 +118,10 @@ public class InicioPanel extends JPanel {
                 BorderFactory.createEmptyBorder(12, 12, 12, 12)));
         JLabel icon = new JLabel(new NeonIcon(icono, 28, Estilos.ROSA_NEON));
         JLabel nombre = new JLabel(titulo);
-        nombre.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        nombre.setFont(new Font(FUENTE, Font.BOLD, 14));
         nombre.setForeground(Estilos.TEXTO);
         JLabel desc = new JLabel(descripcion);
-        desc.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        desc.setFont(new Font(FUENTE, Font.PLAIN, 11));
         desc.setForeground(Estilos.TEXTO_SUAVE);
         JPanel textos = new JPanel(new GridLayout(2, 1));
         textos.setOpaque(false);
@@ -150,7 +152,7 @@ public class InicioPanel extends JPanel {
         lblTitulo.setFont(Estilos.fuenteNormal());
         lblTitulo.setForeground(Estilos.TEXTO_SUAVE);
         JLabel lblValor = new JLabel(valor);
-        lblValor.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblValor.setFont(new Font(FUENTE, Font.BOLD, 22));
         lblValor.setForeground(Estilos.TEXTO);
         JPanel textos = new JPanel(new GridLayout(2, 1));
         textos.setOpaque(false);

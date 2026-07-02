@@ -18,11 +18,16 @@ import org.slf4j.LoggerFactory;
 import servicio.CalculadoraPedido;
 
 public class PedidoDAO implements IPedidoDAO {
+    private static final String COL_ID_PEDIDO = "id_pedido";
+    private static final String COL_ID_COMPROBANTE = "id_comprobante";
+    private static final String TABLA_COMPROBANTES = "comprobantes";
+    private static final String ESTADO_COMPLETADO = "COMPLETADO";
+    private static final String ESTADO_PENDIENTE = "PENDIENTE";
     private static final Logger LOGGER = LoggerFactory.getLogger(PedidoDAO.class);
     private final CalculadoraPedido calculadora = new CalculadoraPedido();
     public List<Pedido> listarRecientes() throws SQLException {
         List<Pedido> pedidos = new ArrayList<Pedido>();
-        String sql = "SELECT p.id_pedido, p.codigo, p.cliente, p.total, p.metodo_pago, p.estado, p.fecha, m.numero "
+        String sql = "SELECT p." + COL_ID_PEDIDO + ", p.codigo, p.cliente, p.total, p.metodo_pago, p.estado, p.fecha, m.numero "
                 + "FROM pedidos p LEFT JOIN mesas m ON m.id_mesa = p.id_mesa ORDER BY p.fecha DESC LIMIT 50";
         try (Connection cn = ConexionBD.getConexion();
              PreparedStatement ps = cn.prepareStatement(sql);
@@ -44,7 +49,7 @@ public class PedidoDAO implements IPedidoDAO {
     }
 
     public int pedidosPendientes() throws SQLException {
-        String sql = "SELECT COUNT(*) FROM pedidos WHERE estado = 'PENDIENTE'";
+        String sql = "SELECT COUNT(*) FROM pedidos WHERE estado = '" + ESTADO_PENDIENTE + "'";
         try (Connection cn = ConexionBD.getConexion();
              PreparedStatement ps = cn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -53,7 +58,7 @@ public class PedidoDAO implements IPedidoDAO {
     }
 
     public Pedido buscarPorCodigo(String codigo) throws SQLException {
-        String sql = "SELECT p.id_pedido, p.codigo, p.cliente, p.total, p.metodo_pago, p.estado, p.fecha, m.numero "
+        String sql = "SELECT p." + COL_ID_PEDIDO + ", p.codigo, p.cliente, p.total, p.metodo_pago, p.estado, p.fecha, m.numero "
                 + "FROM pedidos p LEFT JOIN mesas m ON m.id_mesa = p.id_mesa WHERE p.codigo = ? LIMIT 1";
         try (Connection cn = ConexionBD.getConexion();
              PreparedStatement ps = cn.prepareStatement(sql)) {
@@ -91,7 +96,7 @@ public class PedidoDAO implements IPedidoDAO {
     }
 
     public boolean existePedidoPendienteMesa(int idMesa) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM pedidos WHERE id_mesa = ? AND estado = 'PENDIENTE'";
+        String sql = "SELECT COUNT(*) FROM pedidos WHERE id_mesa = ? AND estado = '" + ESTADO_PENDIENTE + "'";
         try (Connection cn = ConexionBD.getConexion();
              PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setInt(1, idMesa);
@@ -102,7 +107,7 @@ public class PedidoDAO implements IPedidoDAO {
     }
 
     public double ventasHoy() throws SQLException {
-        String sql = "SELECT COALESCE(SUM(total), 0) FROM pedidos WHERE DATE(fecha) = CURDATE() AND estado = 'COMPLETADO'";
+        String sql = "SELECT COALESCE(SUM(total), 0) FROM pedidos WHERE DATE(fecha) = CURDATE() AND estado = '" + ESTADO_COMPLETADO + "'";
         try (Connection cn = ConexionBD.getConexion();
              PreparedStatement ps = cn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -115,7 +120,7 @@ public class PedidoDAO implements IPedidoDAO {
 
         String codigo = "P-" + System.currentTimeMillis();
         String sqlPedido = "INSERT INTO pedidos(codigo, id_usuario, id_mesa, cliente, total, metodo_pago, estado, fecha) "
-                + "VALUES(?, ?, ?, ?, ?, ?, 'PENDIENTE', NOW())";
+                + "VALUES(?, ?, ?, ?, ?, ?, '" + ESTADO_PENDIENTE + "', NOW())";
         String sqlDetalle = "INSERT INTO detalle_pedido(id_pedido, id_producto, cantidad, precio_unitario, subtotal) VALUES(?, ?, ?, ?, ?)";
         String sqlMesa = "UPDATE mesas SET estado = 'OCUPADO' WHERE id_mesa = ?";
 
@@ -181,11 +186,11 @@ public class PedidoDAO implements IPedidoDAO {
     }
 
     public void registrarPago(String codigo, String metodoPago, Comprobante comprobante) throws SQLException {
-        String sqlBuscar = "SELECT id_pedido, id_mesa, total, estado FROM pedidos WHERE codigo = ? FOR UPDATE";
-        String sqlPedido = "UPDATE pedidos SET metodo_pago = ?, estado = 'COMPLETADO' WHERE id_pedido = ?";
+        String sqlBuscar = "SELECT " + COL_ID_PEDIDO + ", id_mesa, total, estado FROM pedidos WHERE codigo = ? FOR UPDATE";
+        String sqlPedido = "UPDATE pedidos SET metodo_pago = ?, estado = '" + ESTADO_COMPLETADO + "' WHERE id_pedido = ?";
         String sqlCaja = "INSERT INTO caja(id_pedido, monto, metodo_pago, fecha, tipo_movimiento) VALUES(?, ?, ?, NOW(), 'VENTA')";
         String sqlMesa = "UPDATE mesas SET estado = 'LIBRE' WHERE id_mesa = ?";
-        String sqlComprobante = "INSERT INTO comprobantes(id_pedido, tipo, numero, cliente_nombre, dni, ruc, razon_social, direccion, archivo_pdf, fecha) "
+        String sqlComprobante = "INSERT INTO " + TABLA_COMPROBANTES + "(id_pedido, tipo, numero, cliente_nombre, dni, ruc, razon_social, direccion, archivo_pdf, fecha) "
                 + "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
 
         Connection cn = null;
@@ -203,7 +208,7 @@ public class PedidoDAO implements IPedidoDAO {
                     if (!rs.next()) {
                         throw new SQLException("No se encontró el pedido " + codigo);
                     }
-                    idPedido = rs.getInt("id_pedido");
+                    idPedido = rs.getInt(COL_ID_PEDIDO);
                     idMesa = rs.getInt("id_mesa");
                     if (rs.wasNull()) {
                         idMesa = 0;
@@ -212,7 +217,7 @@ public class PedidoDAO implements IPedidoDAO {
                     estado = rs.getString("estado");
                 }
             }
-            if ("COMPLETADO".equalsIgnoreCase(estado)) {
+            if (ESTADO_COMPLETADO.equalsIgnoreCase(estado)) {
                 throw new SQLException("El pedido " + codigo + " ya fue pagado.");
             }
             try (PreparedStatement ps = cn.prepareStatement(sqlPedido)) {
@@ -261,9 +266,9 @@ public class PedidoDAO implements IPedidoDAO {
     }
 
     public Comprobante buscarComprobantePorPedido(String codigo) throws SQLException {
-        String sql = "SELECT co.id_comprobante, co.id_pedido, co.tipo, co.numero, co.cliente_nombre, co.dni, co.ruc, "
+        String sql = "SELECT co." + COL_ID_COMPROBANTE + ", co." + COL_ID_PEDIDO + ", co.tipo, co.numero, co.cliente_nombre, co.dni, co.ruc, "
                 + "co.razon_social, co.direccion, co.archivo_pdf, co.fecha "
-                + "FROM comprobantes co INNER JOIN pedidos p ON p.id_pedido = co.id_pedido "
+                + "FROM " + TABLA_COMPROBANTES + " co INNER JOIN pedidos p ON p." + COL_ID_PEDIDO + " = co." + COL_ID_PEDIDO + " "
                 + "WHERE p.codigo = ? ORDER BY co.fecha DESC LIMIT 1";
         try (Connection cn = ConexionBD.getConexion()) {
             asegurarTablaComprobantes(cn);
@@ -277,11 +282,11 @@ public class PedidoDAO implements IPedidoDAO {
     }
 
     public void eliminarPorCodigo(String codigo) throws SQLException {
-        String sqlBuscar = "SELECT id_pedido, id_mesa FROM pedidos WHERE codigo = ?";
-        String sqlComprobante = "DELETE FROM comprobantes WHERE id_pedido = ?";
-        String sqlCaja = "DELETE FROM caja WHERE id_pedido = ?";
-        String sqlDetalle = "DELETE FROM detalle_pedido WHERE id_pedido = ?";
-        String sqlPedido = "DELETE FROM pedidos WHERE id_pedido = ?";
+        String sqlBuscar = "SELECT " + COL_ID_PEDIDO + ", id_mesa FROM pedidos WHERE codigo = ?";
+        String sqlComprobante = "DELETE FROM " + TABLA_COMPROBANTES + " WHERE " + COL_ID_PEDIDO + " = ?";
+        String sqlCaja = "DELETE FROM caja WHERE " + COL_ID_PEDIDO + " = ?";
+        String sqlDetalle = "DELETE FROM detalle_pedido WHERE " + COL_ID_PEDIDO + " = ?";
+        String sqlPedido = "DELETE FROM pedidos WHERE " + COL_ID_PEDIDO + " = ?";
         String sqlMesa = "UPDATE mesas SET estado = 'LIBRE' WHERE id_mesa = ?";
 
         Connection cn = null;
@@ -294,9 +299,9 @@ public class PedidoDAO implements IPedidoDAO {
                 ps.setString(1, codigo);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (!rs.next()) {
-                        throw new SQLException("No se encontro el pedido " + codigo);
+                        throw new SQLException("No se encontró el pedido " + codigo);
                     }
-                    idPedido = rs.getInt("id_pedido");
+                    idPedido = rs.getInt(COL_ID_PEDIDO);
                     idMesa = rs.getInt("id_mesa");
                     if (rs.wasNull()) {
                         idMesa = 0;
@@ -352,9 +357,9 @@ public class PedidoDAO implements IPedidoDAO {
     }
 
     private void asegurarTablaComprobantes(Connection cn) throws SQLException {
-        String sql = "CREATE TABLE IF NOT EXISTS comprobantes ("
-                + "id_comprobante INT AUTO_INCREMENT PRIMARY KEY,"
-                + "id_pedido INT NOT NULL,"
+        String sql = "CREATE TABLE IF NOT EXISTS " + TABLA_COMPROBANTES + " ("
+                + COL_ID_COMPROBANTE + " INT AUTO_INCREMENT PRIMARY KEY,"
+                + COL_ID_PEDIDO + " INT NOT NULL,"
                 + "tipo VARCHAR(30) NOT NULL,"
                 + "numero VARCHAR(40) NOT NULL,"
                 + "cliente_nombre VARCHAR(160),"
@@ -364,7 +369,7 @@ public class PedidoDAO implements IPedidoDAO {
                 + "direccion VARCHAR(220),"
                 + "archivo_pdf VARCHAR(255),"
                 + "fecha DATETIME NOT NULL,"
-                + "CONSTRAINT fk_comprobantes_pedido FOREIGN KEY (id_pedido) REFERENCES pedidos(id_pedido)"
+                + "CONSTRAINT fk_comprobantes_pedido FOREIGN KEY (" + COL_ID_PEDIDO + ") REFERENCES pedidos(" + COL_ID_PEDIDO + ")"
                 + ")";
         try (Statement st = cn.createStatement()) {
             st.execute(sql);
@@ -373,7 +378,7 @@ public class PedidoDAO implements IPedidoDAO {
 
     private Pedido mapear(ResultSet rs) throws SQLException {
         return new Pedido(
-                rs.getInt("id_pedido"),
+                rs.getInt(COL_ID_PEDIDO),
                 rs.getString("codigo"),
                 rs.getString("cliente"),
                 rs.getDouble("total"),
@@ -385,8 +390,8 @@ public class PedidoDAO implements IPedidoDAO {
 
     private Comprobante mapearComprobante(ResultSet rs) throws SQLException {
         return new Comprobante(
-                rs.getInt("id_comprobante"),
-                rs.getInt("id_pedido"),
+                rs.getInt(COL_ID_COMPROBANTE),
+                rs.getInt(COL_ID_PEDIDO),
                 rs.getString("tipo"),
                 rs.getString("numero"),
                 rs.getString("cliente_nombre"),

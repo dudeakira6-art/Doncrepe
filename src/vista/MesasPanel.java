@@ -16,9 +16,10 @@ import vista.componentes.MesaCard;
 import vista.componentes.WrapLayout;
 
 public class MesasPanel extends JPanel {
+    private static final String TITULO = "Mesas";
     private final JPanel grilla = new JPanel(new WrapLayout(FlowLayout.LEFT, 16, 16));
-    private final MesasController controller = new MesasController();
-    private final Consumer<Mesa> alOcuparMesa;
+    private final transient MesasController controller = new MesasController();
+    private final transient Consumer<Mesa> alOcuparMesa;
 
     public MesasPanel() {
         this(null);
@@ -29,7 +30,7 @@ public class MesasPanel extends JPanel {
         setLayout(new BorderLayout(10, 10));
         setBackground(Estilos.FONDO);
         setBorder(BorderFactory.createEmptyBorder(18, 18, 18, 18));
-        JLabel titulo = new JLabel("Mesas");
+        JLabel titulo = new JLabel(TITULO);
         titulo.setFont(Estilos.fuenteTitulo());
         titulo.setForeground(Estilos.TEXTO);
         add(titulo, BorderLayout.NORTH);
@@ -38,7 +39,7 @@ public class MesasPanel extends JPanel {
         JScrollPane scroll = new JScrollPane(grilla);
         scroll.setBorder(BorderFactory.createEmptyBorder());
         scroll.getViewport().setBackground(Estilos.FONDO);
-        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.getVerticalScrollBar().setUnitIncrement(16);
         add(scroll, BorderLayout.CENTER);
     }

@@ -10,11 +10,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
-public class ConexionBD {
+public final class ConexionBD {
     private static final String DEFAULT_HOST = "localhost";
     private static final String DEFAULT_PORT = "3306";
     private static final String DEFAULT_DATABASE = "don_crepe_db";
     private static final String CONFIG_FILE = "config/database.properties";
+
+    private ConexionBD() {
+    }
 
     public static Connection getConexion() throws SQLException {
         try {

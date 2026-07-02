@@ -85,7 +85,7 @@ public final class Estilos {
         renderer.setBackground(ROSA_FUERTE);
         renderer.setForeground(Color.WHITE);
         renderer.setFont(new Font(FUENTE_BASE, Font.BOLD, 13));
-        renderer.setHorizontalAlignment(DefaultTableCellRenderer.CENTER);
+        renderer.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         renderer.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         header.setDefaultRenderer(renderer);
     }

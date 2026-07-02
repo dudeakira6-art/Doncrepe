@@ -44,9 +44,15 @@ import vista.componentes.RoundedPanel;
 import vista.componentes.WrapLayout;
 
 public class PedidosPanel extends JPanel {
-    private final Usuario usuario;
-    private final Runnable alGuardar;
-    private final PedidosController controller = new PedidosController();
+    private static final String FUENTE = "Segoe UI";
+    private static final String ESTADO_COMPLETADO = "COMPLETADO";
+    private static final String TIPO_FACTURA = "Factura";
+    private static final String CATEGORIA_BEBIDA = "bebida";
+    private static final String CARPETA_COMPROBANTES = "reportes/comprobantes";
+    private static final String TEXTO_COMPROBANTE = "Comprobante";
+    private final transient Usuario usuario;
+    private final transient Runnable alGuardar;
+    private final transient PedidosController controller = new PedidosController();
     private final DefaultTableModel model = new DefaultTableModel(new Object[]{"Pedido", "Cliente", "Mesa", "Total", "Método de Pago", "Estado"}, 0);
     private JTable tablaPedidos;
     private JButton btnComprobante;
@@ -93,7 +99,7 @@ public class PedidosPanel extends JPanel {
         JButton pagar = Estilos.botonSecundario("Proceder con pago");
         pagar.setIcon(new NeonIcon(NeonIcon.CASH, 18, Estilos.ROSA_NEON));
         pagar.addActionListener(e -> procederPago());
-        btnComprobante = Estilos.botonSecundario("Comprobante");
+        btnComprobante = Estilos.botonSecundario(TEXTO_COMPROBANTE);
         btnComprobante.setEnabled(false);
         btnComprobante.addActionListener(e -> verComprobanteSeleccionado());
         JButton eliminar = Estilos.botonSecundario("Eliminar Pedido");
@@ -143,7 +149,7 @@ public class PedidosPanel extends JPanel {
             JCheckBox delivery = new JCheckBox("Pedido para Delivery");
             delivery.setOpaque(false);
             delivery.setForeground(Estilos.ROSA_NEON);
-            delivery.setFont(new Font("Segoe UI", Font.BOLD, 13));
+            delivery.setFont(new Font(FUENTE, Font.BOLD, 13));
             if (mesaPreseleccionada != null) {
                 delivery.setSelected(false);
                 cmbMesa.setEnabled(false);
@@ -159,13 +165,13 @@ public class PedidosPanel extends JPanel {
             JTable tablaDetalle = new JTable(detalleModel);
             Estilos.estilizarTabla(tablaDetalle);
             JLabel total = new JLabel("Total: S/ 0.00");
-            total.setFont(new Font("Segoe UI", Font.BOLD, 16));
+            total.setFont(new Font(FUENTE, Font.BOLD, 16));
             total.setForeground(Estilos.ROSA_NEON);
 
             JTabbedPane tabs = new JTabbedPane();
                         tabs.add("Crepés dulces", crearTabProductos(productos, "crepe dulce", cantidad, detalles, detalleModel, total));
                         tabs.add("Crepés salados", crearTabProductos(productos, "crepe salado", cantidad, detalles, detalleModel, total));
-            tabs.add("Bebidas", crearTabProductos(productos, "bebida", cantidad, detalles, detalleModel, total));
+            tabs.add("Bebidas", crearTabProductos(productos, CATEGORIA_BEBIDA, cantidad, detalles, detalleModel, total));
 
             RoundedPanel panel = new RoundedPanel(18, Estilos.BLANCO, false);
             panel.setLayout(new BorderLayout(8, 8));
@@ -202,7 +208,14 @@ public class PedidosPanel extends JPanel {
                 mensaje("No hay mesas libres disponibles. Marque Delivery o libere una mesa.");
                 return;
             }
-            controller.crearPedido(usuario, delivery.isSelected() ? null : mesa.getMesa(), cliente.getText().trim(), "Pendiente", detalles, delivery.isSelected());
+            PedidosController.PedidoSolicitud solicitud = new PedidosController.PedidoSolicitud();
+            solicitud.setUsuario(usuario);
+            solicitud.setMesa(delivery.isSelected() ? null : mesa.getMesa());
+            solicitud.setCliente(cliente.getText().trim());
+            solicitud.setMetodoPago("Pendiente");
+            solicitud.setDetalles(detalles);
+            solicitud.setDelivery(delivery.isSelected());
+            controller.crearPedido(solicitud);
             mensaje("Pedido agregado correctamente.");
             cargar();
             notificarCambios();
@@ -235,7 +248,7 @@ public class PedidosPanel extends JPanel {
         }
         JScrollPane scroll = new JScrollPane(panel);
         scroll.setPreferredSize(new java.awt.Dimension(620, 260));
-        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.getVerticalScrollBar().setUnitIncrement(16);
         scroll.getViewport().setBackground(Estilos.FONDO);
         return scroll;
@@ -249,14 +262,14 @@ public class PedidosPanel extends JPanel {
         }
         String codigo = tablaPedidos.getValueAt(fila, 0).toString();
         String estado = tablaPedidos.getValueAt(fila, 5).toString();
-        if ("COMPLETADO".equalsIgnoreCase(estado)) {
+        if (ESTADO_COMPLETADO.equalsIgnoreCase(estado)) {
             mensaje("El pedido seleccionado ya fue pagado.");
             return;
         }
         try {
             Pedido pedido = controller.buscarPedido(codigo);
             List<DetallePedido> detalles = controller.listarDetalles(codigo);
-            ResultadoComprobante resultado = mostrarDialogoPago(pedido, detalles);
+            ResultadoComprobante resultado = mostrarDialogoPago(pedido);
             if (resultado == null) {
                 return;
             }
@@ -269,9 +282,9 @@ public class PedidosPanel extends JPanel {
         }
     }
 
-    private ResultadoComprobante mostrarDialogoPago(Pedido pedido, List<DetallePedido> detalles) throws SQLException, IOException {
+    private ResultadoComprobante mostrarDialogoPago(Pedido pedido) throws SQLException, IOException {
         JComboBox<String> metodo = new JComboBox<String>(new String[]{"Efectivo", "Tarjeta", "Yape"});
-        JComboBox<String> tipo = new JComboBox<String>(new String[]{"Boleta simple", "Boleta con DNI", "Factura"});
+        JComboBox<String> tipo = new JComboBox<String>(new String[]{"Boleta simple", "Boleta con DNI", TIPO_FACTURA});
         JCheckBox confirmado = new JCheckBox("Confirmo que el pago fue recibido/aprobado");
         confirmado.setOpaque(false);
 
@@ -316,7 +329,7 @@ public class PedidosPanel extends JPanel {
 
         JLabel ayuda = new JLabel("Boleta simple: no requiere datos del cliente.");
         ayuda.setForeground(Estilos.TEXTO_SUAVE);
-        ayuda.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+        ayuda.setFont(new Font(FUENTE, Font.ITALIC, 12));
 
         CardLayout tarjetasLayout = new CardLayout();
         JPanel tarjetas = new JPanel(tarjetasLayout);
@@ -337,12 +350,12 @@ public class PedidosPanel extends JPanel {
         qrPanel.setLayout(new BorderLayout(0, 10));
         qrPanel.setPreferredSize(new Dimension(250, 0));
         JLabel qrTitulo = new JLabel("Yape QR", javax.swing.SwingConstants.CENTER);
-        qrTitulo.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        qrTitulo.setFont(new Font(FUENTE, Font.BOLD, 15));
         qrTitulo.setForeground(Estilos.ROSA_NEON);
         JLabel qr = new JLabel(Recursos.imagen("Código_QR.jpg", 170, 170));
         qr.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         JLabel qrSubtitulo = new JLabel("<html><div style='text-align:center;'>Se muestra solo al elegir Yape</div></html>", javax.swing.SwingConstants.CENTER);
-        qrSubtitulo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        qrSubtitulo.setFont(new Font(FUENTE, Font.PLAIN, 12));
         qrSubtitulo.setForeground(Estilos.TEXTO_SUAVE);
         JPanel qrContenido = new JPanel(new BorderLayout(0, 8));
         qrContenido.setOpaque(false);
@@ -373,17 +386,33 @@ public class PedidosPanel extends JPanel {
             throw new IllegalArgumentException("Debe confirmar que el pago fue recibido o aprobado.");
         }
         String tipoValor = tipoComprobante(tipo.getSelectedItem().toString());
+        PedidosController.PagoComprobanteSolicitud solicitud = new PedidosController.PagoComprobanteSolicitud();
+        solicitud.setCodigo(pedido.getCodigo());
+        solicitud.setMetodoPago(metodo.getSelectedItem().toString());
+        solicitud.setTipoComprobante(tipoValor);
+        solicitud.setCarpetaComprobantes(new File(CARPETA_COMPROBANTES));
         if (Comprobante.BOLETA_SIMPLE.equals(tipoValor)) {
-            return controller.procesarPagoYGenerarComprobante(pedido.getCodigo(), metodo.getSelectedItem().toString(), tipoValor,
-                    "", "", "", "", "", new File("reportes/comprobantes"));
+            solicitud.setClienteNombre("");
+            solicitud.setDni("");
+            solicitud.setRuc("");
+            solicitud.setRazonSocial("");
+            solicitud.setDireccion("");
+            return controller.procesarPagoYGenerarComprobante(solicitud);
         }
         if (Comprobante.BOLETA_DNI.equals(tipoValor)) {
-            return controller.procesarPagoYGenerarComprobante(pedido.getCodigo(), metodo.getSelectedItem().toString(), tipoValor,
-                    nombreBoleta.getText(), dniBoleta.getText(), "", "", "", new File("reportes/comprobantes"));
+            solicitud.setClienteNombre(nombreBoleta.getText());
+            solicitud.setDni(dniBoleta.getText());
+            solicitud.setRuc("");
+            solicitud.setRazonSocial("");
+            solicitud.setDireccion("");
+            return controller.procesarPagoYGenerarComprobante(solicitud);
         }
-        return controller.procesarPagoYGenerarComprobante(pedido.getCodigo(), metodo.getSelectedItem().toString(), tipoValor,
-                nombreFactura.getText(), "", rucFactura.getText(), razonFactura.getText(), direccionFactura.getText(),
-                new File("reportes/comprobantes"));
+        solicitud.setClienteNombre(nombreFactura.getText());
+        solicitud.setDni("");
+        solicitud.setRuc(rucFactura.getText());
+        solicitud.setRazonSocial(razonFactura.getText());
+        solicitud.setDireccion(direccionFactura.getText());
+        return controller.procesarPagoYGenerarComprobante(solicitud);
     }
 
     private void verComprobanteSeleccionado() {
@@ -394,7 +423,7 @@ public class PedidosPanel extends JPanel {
         }
         String codigo = tablaPedidos.getValueAt(fila, 0).toString();
         String estado = tablaPedidos.getValueAt(fila, 5).toString();
-        if (!"COMPLETADO".equalsIgnoreCase(estado)) {
+        if (!ESTADO_COMPLETADO.equalsIgnoreCase(estado)) {
             mensaje("El pedido todavía no tiene comprobante porque está pendiente.");
             return;
         }
@@ -412,13 +441,13 @@ public class PedidosPanel extends JPanel {
         }
         int fila = tablaPedidos == null ? -1 : tablaPedidos.getSelectedRow();
         if (fila < 0) {
-            btnComprobante.setText("Comprobante");
+            btnComprobante.setText(TEXTO_COMPROBANTE);
             btnComprobante.setEnabled(false);
             return;
         }
         String estado = tablaPedidos.getValueAt(fila, 5).toString();
-        if (!"COMPLETADO".equalsIgnoreCase(estado)) {
-            btnComprobante.setText("Comprobante");
+        if (!ESTADO_COMPLETADO.equalsIgnoreCase(estado)) {
+            btnComprobante.setText(TEXTO_COMPROBANTE);
             btnComprobante.setEnabled(false);
             return;
         }
@@ -426,14 +455,14 @@ public class PedidosPanel extends JPanel {
         try {
             Comprobante comprobante = controller.buscarComprobante(codigo);
             if (comprobante == null) {
-                btnComprobante.setText("Comprobante");
+                btnComprobante.setText(TEXTO_COMPROBANTE);
                 btnComprobante.setEnabled(false);
                 return;
             }
-            btnComprobante.setText(Comprobante.FACTURA.equals(comprobante.getTipo()) ? "Factura" : "Boleta");
+            btnComprobante.setText(Comprobante.FACTURA.equals(comprobante.getTipo()) ? TIPO_FACTURA : "Boleta");
             btnComprobante.setEnabled(true);
         } catch (SQLException ex) {
-            btnComprobante.setText("Comprobante");
+            btnComprobante.setText(TEXTO_COMPROBANTE);
             btnComprobante.setEnabled(false);
         }
     }
@@ -441,12 +470,12 @@ public class PedidosPanel extends JPanel {
     private JLabel labelFormulario(String texto) {
         JLabel label = new JLabel(texto);
         label.setForeground(Estilos.ROSA_NEON);
-        label.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        label.setFont(new Font(FUENTE, Font.BOLD, 13));
         return label;
     }
 
     private JTextField campoTexto(JTextField campo) {
-        campo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        campo.setFont(new Font(FUENTE, Font.PLAIN, 13));
         campo.setPreferredSize(new Dimension(360, 34));
         campo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
         return campo;
@@ -457,7 +486,7 @@ public class PedidosPanel extends JPanel {
         panel.setBorder(BorderFactory.createEmptyBorder(18, 18, 18, 18));
         panel.setLayout(new BorderLayout(0, 10));
         JLabel titulo = new JLabel("Boleta simple");
-        titulo.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        titulo.setFont(new Font(FUENTE, Font.BOLD, 15));
         titulo.setForeground(Estilos.ROSA_NEON);
         panel.add(titulo, BorderLayout.NORTH);
         panel.add(ayuda, BorderLayout.CENTER);
@@ -536,8 +565,8 @@ public class PedidosPanel extends JPanel {
 
     private String categoriaClave(String categoria) {
         String valor = categoria == null ? "" : categoria.trim().toLowerCase();
-        if (valor.contains("bebida")) {
-            return "bebida";
+        if (valor.contains(CATEGORIA_BEBIDA)) {
+            return CATEGORIA_BEBIDA;
         }
         if (valor.contains("salado")) {
             return "crepe salado";
@@ -546,7 +575,7 @@ public class PedidosPanel extends JPanel {
     }
 
     private String tipoComprobante(String visible) {
-        if ("Factura".equals(visible)) {
+        if (TIPO_FACTURA.equals(visible)) {
             return Comprobante.FACTURA;
         }
         if ("Boleta con DNI".equals(visible)) {
@@ -569,7 +598,7 @@ public class PedidosPanel extends JPanel {
         panel.setBorder(BorderFactory.createEmptyBorder(16, 18, 16, 18));
         JLabel icono = new JLabel(new NeonIcon(error ? NeonIcon.EXCEL : NeonIcon.CASH, 28, error ? Estilos.ROJO : Estilos.ROSA_NEON));
         JLabel mensaje = new JLabel("<html><body style='width:320px'>" + texto.replace("\n", "<br>") + "</body></html>");
-        mensaje.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        mensaje.setFont(new Font(FUENTE, Font.BOLD, 13));
         mensaje.setForeground(error ? Estilos.ROJO : Estilos.TEXTO);
         panel.add(icono, BorderLayout.WEST);
         panel.add(mensaje, BorderLayout.CENTER);

@@ -9,7 +9,12 @@ import dao.PedidoDAO;
 import dao.ProductoDAO;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import modelo.Comprobante;
 import modelo.DetallePedido;
@@ -26,6 +31,7 @@ import servicio.ComprobanteService;
 
 public class PedidosController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PedidosController.class);
+    private static final String ESTADO_COMPLETADO = "COMPLETADO";
     private final IPedidoDAO pedidoDAO;
     private final IMesaDAO mesaDAO;
     private final IProductoDAO productoDAO;
@@ -85,7 +91,7 @@ public class PedidosController {
     }
 
     public List<Mesa> listarMesasLibres() throws SQLException {
-        java.util.List<Mesa> libres = new java.util.ArrayList<Mesa>();
+        List<Mesa> libres = new ArrayList<Mesa>();
         for (Mesa mesa : mesaDAO.listar()) {
             if ("LIBRE".equalsIgnoreCase(mesa.getEstado())) {
                 libres.add(mesa);
@@ -102,11 +108,17 @@ public class PedidosController {
         return calculadora.calcularTotal(detalles);
     }
 
-    public void crearPedido(Usuario usuario, Mesa mesa, String cliente, String metodoPago, List<DetallePedido> detalles) throws SQLException {
-        crearPedido(usuario, mesa, cliente, metodoPago, detalles, false);
-    }
+    public void crearPedido(PedidoSolicitud solicitud) throws SQLException {
+        if (solicitud == null) {
+            throw new IllegalArgumentException("Debe completar la solicitud del pedido.");
+        }
+        Usuario usuario = solicitud.getUsuario();
+        Mesa mesa = solicitud.getMesa();
+        String cliente = solicitud.getCliente();
+        String metodoPago = solicitud.getMetodoPago();
+        List<DetallePedido> detalles = solicitud.getDetalles();
+        boolean delivery = solicitud.isDelivery();
 
-    public void crearPedido(Usuario usuario, Mesa mesa, String cliente, String metodoPago, List<DetallePedido> detalles, boolean delivery) throws SQLException {
         if (usuario == null) {
             throw new IllegalArgumentException("Debe seleccionar empleado.");
         }
@@ -123,13 +135,26 @@ public class PedidosController {
         if (!delivery && !"LIBRE".equalsIgnoreCase(mesa.getEstado())) {
             throw new IllegalArgumentException("La mesa seleccionada está ocupada.");
         }
-        LOGGER.info("Creando pedido para {} en {} con productos: {}", clienteNormalizado, delivery ? "Delivery" : "mesa " + mesa.getNumero(), resumenProductos(detalles));
+        LOGGER.info("Creando pedido para {} en {} con productos: {}", clienteNormalizado,
+                delivery ? "Delivery" : "mesa " + mesa.getNumero(), resumenProductos(detalles));
         pedidoDAO.crearPedido(usuario.getIdUsuario(), delivery ? 0 : mesa.getIdMesa(), clienteNormalizado, metodoPago, detalles);
     }
 
-    public ResultadoComprobante procesarPagoYGenerarComprobante(String codigo, String metodoPago, String tipoComprobante,
-            String clienteNombre, String dni, String ruc, String razonSocial, String direccion, File carpetaComprobantes)
+    public ResultadoComprobante procesarPagoYGenerarComprobante(PagoComprobanteSolicitud solicitud)
             throws SQLException, IOException {
+        if (solicitud == null) {
+            throw new IllegalArgumentException("Debe completar la solicitud del pago.");
+        }
+        String codigo = solicitud.getCodigo();
+        String metodoPago = solicitud.getMetodoPago();
+        String tipoComprobante = solicitud.getTipoComprobante();
+        String clienteNombre = solicitud.getClienteNombre();
+        String dni = solicitud.getDni();
+        String ruc = solicitud.getRuc();
+        String razonSocial = solicitud.getRazonSocial();
+        String direccion = solicitud.getDireccion();
+        File carpetaComprobantes = solicitud.getCarpetaComprobantes();
+
         if (StringUtils.isBlank(codigo)) {
             throw new IllegalArgumentException("Seleccione un pedido para pagar.");
         }
@@ -141,10 +166,10 @@ public class PedidosController {
         if (pedidoActual == null) {
             throw new IllegalArgumentException("El pedido seleccionado ya no existe.");
         }
-        if ("COMPLETADO".equalsIgnoreCase(pedidoActual.getEstado())) {
+        if (ESTADO_COMPLETADO.equalsIgnoreCase(pedidoActual.getEstado())) {
             throw new IllegalArgumentException("El pedido ya fue pagado.");
         }
-        Comprobante comprobante = construirComprobante(pedidoActual, tipoComprobante, clienteNombre, dni, ruc, razonSocial, direccion, carpetaComprobantes);
+        Comprobante comprobante = construirComprobante(pedidoActual, solicitud);
         List<DetallePedido> detalles = pedidoDAO.listarDetalles(codigo);
         Pedido pedidoParaComprobante = new Pedido(
                 pedidoActual.getIdPedido(),
@@ -152,15 +177,19 @@ public class PedidosController {
                 pedidoActual.getCliente(),
                 pedidoActual.getTotal(),
                 metodoPago,
-                "COMPLETADO",
+                ESTADO_COMPLETADO,
                 pedidoActual.getFecha(),
                 pedidoActual.getMesaNumero());
         File pdf = comprobanteService.generarPdf(pedidoParaComprobante, detalles, comprobante, carpetaComprobantes);
         try {
             pedidoDAO.registrarPago(codigo, metodoPago, comprobante);
         } catch (SQLException ex) {
-            if (pdf.exists() && !pdf.delete()) {
-                LOGGER.warn("No se pudo eliminar el PDF huérfano {}", pdf.getAbsolutePath());
+            if (pdf.exists()) {
+                try {
+                    Files.deleteIfExists(pdf.toPath());
+                } catch (IOException ioEx) {
+                    LOGGER.warn("No se pudo eliminar el PDF huérfano {}", pdf.getAbsolutePath(), ioEx);
+                }
             }
             throw ex;
         }
@@ -211,20 +240,162 @@ public class PedidosController {
     }
 
     public String resumenProductos(List<DetallePedido> detalles) {
-        java.util.List<String> nombres = new java.util.ArrayList<String>();
+        List<String> nombres = new ArrayList<String>();
         for (DetallePedido detalle : detalles) {
             nombres.add(detalle.getCantidad() + "x " + detalle.getProducto().getNombre());
         }
         return Joiner.on(", ").join(nombres);
     }
 
-    private Comprobante construirComprobante(Pedido pedido, String tipo, String clienteNombre, String dni,
-            String ruc, String razonSocial, String direccion, File carpetaComprobantes) {
-        String numero = (Comprobante.FACTURA.equals(tipo) ? "F001-" : "B001-") + System.currentTimeMillis();
-        String archivo = new File(carpetaComprobantes, numero + ".pdf").getPath();
-        String nombre = StringUtils.defaultIfBlank(clienteNombre, pedido.getCliente());
-        return new Comprobante(0, pedido.getIdPedido(), tipo, numero, nombre.trim(), StringUtils.trimToEmpty(dni),
-                StringUtils.trimToEmpty(ruc), StringUtils.trimToEmpty(razonSocial), StringUtils.trimToEmpty(direccion),
-                archivo, new java.util.Date());
+    private Comprobante construirComprobante(Pedido pedido, PagoComprobanteSolicitud solicitud) {
+        String numero = (Comprobante.FACTURA.equals(solicitud.getTipoComprobante()) ? "F001-" : "B001-") + System.currentTimeMillis();
+        File carpeta = solicitud.getCarpetaComprobantes();
+        String archivo = new File(carpeta, numero + ".pdf").getPath();
+        String nombre = StringUtils.defaultIfBlank(solicitud.getClienteNombre(), pedido.getCliente());
+        return new Comprobante(0, pedido.getIdPedido(), solicitud.getTipoComprobante(), numero, nombre.trim(),
+                StringUtils.trimToEmpty(solicitud.getDni()), StringUtils.trimToEmpty(solicitud.getRuc()),
+                StringUtils.trimToEmpty(solicitud.getRazonSocial()), StringUtils.trimToEmpty(solicitud.getDireccion()),
+                archivo, Date.from(LocalDateTime.now(ZoneId.systemDefault()).atZone(ZoneId.systemDefault()).toInstant()));
+    }
+
+    public static final class PedidoSolicitud {
+        private Usuario usuario;
+        private Mesa mesa;
+        private String cliente;
+        private String metodoPago;
+        private List<DetallePedido> detalles;
+        private boolean delivery;
+
+        public Usuario getUsuario() {
+            return usuario;
+        }
+
+        public void setUsuario(Usuario usuario) {
+            this.usuario = usuario;
+        }
+
+        public Mesa getMesa() {
+            return mesa;
+        }
+
+        public void setMesa(Mesa mesa) {
+            this.mesa = mesa;
+        }
+
+        public String getCliente() {
+            return cliente;
+        }
+
+        public void setCliente(String cliente) {
+            this.cliente = cliente;
+        }
+
+        public String getMetodoPago() {
+            return metodoPago;
+        }
+
+        public void setMetodoPago(String metodoPago) {
+            this.metodoPago = metodoPago;
+        }
+
+        public List<DetallePedido> getDetalles() {
+            return detalles;
+        }
+
+        public void setDetalles(List<DetallePedido> detalles) {
+            this.detalles = detalles;
+        }
+
+        public boolean isDelivery() {
+            return delivery;
+        }
+
+        public void setDelivery(boolean delivery) {
+            this.delivery = delivery;
+        }
+    }
+
+    public static final class PagoComprobanteSolicitud {
+        private String codigo;
+        private String metodoPago;
+        private String tipoComprobante;
+        private String clienteNombre;
+        private String dni;
+        private String ruc;
+        private String razonSocial;
+        private String direccion;
+        private File carpetaComprobantes;
+
+        public String getCodigo() {
+            return codigo;
+        }
+
+        public void setCodigo(String codigo) {
+            this.codigo = codigo;
+        }
+
+        public String getMetodoPago() {
+            return metodoPago;
+        }
+
+        public void setMetodoPago(String metodoPago) {
+            this.metodoPago = metodoPago;
+        }
+
+        public String getTipoComprobante() {
+            return tipoComprobante;
+        }
+
+        public void setTipoComprobante(String tipoComprobante) {
+            this.tipoComprobante = tipoComprobante;
+        }
+
+        public String getClienteNombre() {
+            return clienteNombre;
+        }
+
+        public void setClienteNombre(String clienteNombre) {
+            this.clienteNombre = clienteNombre;
+        }
+
+        public String getDni() {
+            return dni;
+        }
+
+        public void setDni(String dni) {
+            this.dni = dni;
+        }
+
+        public String getRuc() {
+            return ruc;
+        }
+
+        public void setRuc(String ruc) {
+            this.ruc = ruc;
+        }
+
+        public String getRazonSocial() {
+            return razonSocial;
+        }
+
+        public void setRazonSocial(String razonSocial) {
+            this.razonSocial = razonSocial;
+        }
+
+        public String getDireccion() {
+            return direccion;
+        }
+
+        public void setDireccion(String direccion) {
+            this.direccion = direccion;
+        }
+
+        public File getCarpetaComprobantes() {
+            return carpetaComprobantes;
+        }
+
+        public void setCarpetaComprobantes(File carpetaComprobantes) {
+            this.carpetaComprobantes = carpetaComprobantes;
+        }
     }
 }

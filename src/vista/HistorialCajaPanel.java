@@ -31,12 +31,13 @@ import vista.componentes.NeonIcon;
 import vista.componentes.RoundedPanel;
 
 public class HistorialCajaPanel extends JPanel {
+    private static final String FUENTE = "Segoe UI";
     private final JSpinner fechaDesde = crearSpinnerFecha();
     private final JSpinner fechaHasta = crearSpinnerFecha();
     private final DefaultTableModel model = new DefaultTableModel(new Object[]{"Pedido", "Monto", "Método", "Fecha", "Tipo"}, 0);
     private final JLabel total = new JLabel("Total: S/ 0.00");
-    private final HistorialCajaController controller = new HistorialCajaController();
-    private final PedidosController pedidosController = new PedidosController();
+    private final transient HistorialCajaController controller = new HistorialCajaController();
+    private final transient PedidosController pedidosController = new PedidosController();
     private JTable tabla;
 
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -95,7 +96,7 @@ public class HistorialCajaPanel extends JPanel {
         RoundedPanel panel = new RoundedPanel(18, Estilos.BLANCO, true);
         panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
         panel.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
-        total.setFont(new Font("Segoe UI", Font.BOLD, 17));
+        total.setFont(new Font(FUENTE, Font.BOLD, 17));
         total.setForeground(Estilos.ROSA_NEON);
         panel.add(total);
         return panel;
@@ -158,7 +159,7 @@ public class HistorialCajaPanel extends JPanel {
     }
 
     private void ponerFechaActual(JSpinner spinner) {
-        spinner.setValue(java.util.Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()));
+        spinner.setValue(java.util.Date.from(LocalDate.now(ZoneId.systemDefault()).atStartOfDay(ZoneId.systemDefault()).toInstant()));
     }
 
     private String formatoSql(Object valor) {
@@ -168,7 +169,7 @@ public class HistorialCajaPanel extends JPanel {
                     .toLocalDate()
                     .format(FORMATO_SQL);
         }
-        return LocalDate.now().format(FORMATO_SQL);
+        return LocalDate.now(ZoneId.systemDefault()).format(FORMATO_SQL);
     }
 
     private String formatearFecha(java.util.Date fecha) {

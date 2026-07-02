@@ -10,6 +10,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 import modelo.Mesa;
 import modelo.Usuario;
 import vista.componentes.MenuLateral;
@@ -17,7 +18,11 @@ import vista.componentes.NeonIcon;
 import vista.componentes.Recursos;
 
 public class MainFrame extends JFrame {
-    private final Usuario usuario;
+    private static final String PANTALLA_INICIO = "Inicio";
+    private static final String PANTALLA_MESA = "Mesa";
+    private static final String PANTALLA_PEDIDO = "Pedido";
+    private static final String BOTON_CERRAR = "Cerrar Sesion";
+    private final transient Usuario usuario;
     private final JPanel contenido = new JPanel(new CardLayout());
     private final MenuLateral menu = new MenuLateral();
     private MesasPanel mesasPanel;
@@ -25,8 +30,8 @@ public class MainFrame extends JFrame {
 
     public MainFrame(Usuario usuario) {
         this.usuario = usuario;
-        setTitle("Don Crepe - Sistema de Gestion");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setTitle("Don Crepé - Sistema de Gestión");
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(1120, 720);
         setMinimumSize(new Dimension(980, 620));
         setLocationRelativeTo(null);
@@ -39,7 +44,7 @@ public class MainFrame extends JFrame {
 
         cargarPaneles();
         configurarMenu();
-        mostrar("Inicio");
+        mostrar(PANTALLA_INICIO);
     }
 
     private JPanel crearHeader() {
@@ -53,7 +58,7 @@ public class MainFrame extends JFrame {
         marca.setOpaque(false);
         ImageIcon logo = Recursos.logo(42, 42);
         JLabel logoLabel = new JLabel(logo);
-        JLabel titulo = new JLabel("Don Crepe POS");
+        JLabel titulo = new JLabel("Don Crepé POS");
         titulo.setFont(Estilos.fuenteSubtitulo());
         titulo.setForeground(Estilos.TEXTO);
         marca.add(logoLabel);
@@ -70,27 +75,14 @@ public class MainFrame extends JFrame {
     }
 
     private void cargarPaneles() {
-        contenido.add(new InicioPanel(usuario, new java.util.function.Consumer<String>() {
-            @Override
-            public void accept(String destino) {
-                mostrar(destino);
-            }
-        }), "Inicio");
-        mesasPanel = new MesasPanel(new java.util.function.Consumer<Mesa>() {
-            @Override
-            public void accept(Mesa mesa) {
-                mostrar("Pedido");
-                pedidosPanel.abrirNuevoPedido(mesa);
-            }
+        contenido.add(new InicioPanel(usuario, this::mostrar), PANTALLA_INICIO);
+        mesasPanel = new MesasPanel(mesa -> {
+            mostrar(PANTALLA_PEDIDO);
+            pedidosPanel.abrirNuevoPedido(mesa);
         });
-        contenido.add(mesasPanel, "Mesa");
-        pedidosPanel = new PedidosPanel(usuario, new Runnable() {
-            @Override
-            public void run() {
-                refrescarDatos();
-            }
-        });
-        contenido.add(pedidosPanel, "Pedido");
+        contenido.add(mesasPanel, PANTALLA_MESA);
+        pedidosPanel = new PedidosPanel(usuario, this::refrescarDatos);
+        contenido.add(pedidosPanel, PANTALLA_PEDIDO);
         contenido.add(new ProductosPanel(), "Producto");
         contenido.add(new HistorialCajaPanel(), "Historial Caja");
     }
@@ -105,12 +97,12 @@ public class MainFrame extends JFrame {
     }
 
     private void configurarMenu() {
-        String[] opciones = {"Inicio", "Mesa", "Pedido", "Producto", "Historial Caja"};
+        String[] opciones = {PANTALLA_INICIO, PANTALLA_MESA, PANTALLA_PEDIDO, "Producto", "Historial Caja"};
         for (String opcion : opciones) {
             menu.getBoton(opcion).addActionListener(e -> mostrar(e.getActionCommand()));
             menu.getBoton(opcion).setActionCommand(opcion);
         }
-        menu.getBoton("Cerrar Sesion").addActionListener(e -> {
+        menu.getBoton(BOTON_CERRAR).addActionListener(e -> {
             new LoginFrame().setVisible(true);
             dispose();
         });

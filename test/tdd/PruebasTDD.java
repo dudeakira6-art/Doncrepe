@@ -193,8 +193,6 @@ public class PruebasTDD {
 
     private void debeAlternarEstadoDeMesa() {
         IMesaDAO mesaDAO = new IMesaDAO() {
-            private String ultimoEstado;
-
             @Override
             public List<Mesa> listar() throws SQLException {
                 return new ArrayList<Mesa>();
@@ -202,7 +200,7 @@ public class PruebasTDD {
 
             @Override
             public void cambiarEstado(int idMesa, String estado) throws SQLException {
-                ultimoEstado = estado;
+                // Stub de prueba: el cambio de estado se valida por el valor retornado por el controlador.
             }
         };
         IPedidoDAO pedidoDAO = new IPedidoDAO() {
@@ -213,10 +211,16 @@ public class PruebasTDD {
             @Override public int pedidosHoy() { return 0; }
             @Override public int pedidosPendientes() { return 0; }
             @Override public double ventasHoy() { return 0; }
-            @Override public void crearPedido(int idUsuario, int idMesa, String cliente, String metodoPago, List<DetallePedido> detalles) { }
-            @Override public void registrarPago(String codigo, String metodoPago, Comprobante comprobante) { }
+            @Override public void crearPedido(int idUsuario, int idMesa, String cliente, String metodoPago, List<DetallePedido> detalles) {
+                // Stub de prueba.
+            }
+            @Override public void registrarPago(String codigo, String metodoPago, Comprobante comprobante) {
+                // Stub de prueba.
+            }
             @Override public Comprobante buscarComprobantePorPedido(String codigo) { return null; }
-            @Override public void eliminarPorCodigo(String codigo) { }
+            @Override public void eliminarPorCodigo(String codigo) {
+                // Stub de prueba.
+            }
         };
         MesasController controller = new MesasController(mesaDAO, pedidoDAO);
         try {
@@ -234,10 +238,16 @@ public class PruebasTDD {
             @Override public int pedidosHoy() { return 0; }
             @Override public int pedidosPendientes() { return 0; }
             @Override public double ventasHoy() { return 0; }
-            @Override public void crearPedido(int idUsuario, int idMesa, String cliente, String metodoPago, List<DetallePedido> detalles) { }
-            @Override public void registrarPago(String codigo, String metodoPago, Comprobante comprobante) { }
+            @Override public void crearPedido(int idUsuario, int idMesa, String cliente, String metodoPago, List<DetallePedido> detalles) {
+                // Stub de prueba.
+            }
+            @Override public void registrarPago(String codigo, String metodoPago, Comprobante comprobante) {
+                // Stub de prueba.
+            }
             @Override public Comprobante buscarComprobantePorPedido(String codigo) { return null; }
-            @Override public void eliminarPorCodigo(String codigo) { }
+            @Override public void eliminarPorCodigo(String codigo) {
+                // Stub de prueba.
+            }
         });
         try {
             controllerConPendiente.alternarEstado(new Mesa(1, 1, "OCUPADO"));

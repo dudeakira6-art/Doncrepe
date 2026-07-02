@@ -20,8 +20,14 @@ import vista.componentes.ProductCard;
 import vista.componentes.WrapLayout;
 
 public class ProductosPanel extends JPanel {
+    private static final String CATEGORIA_DULCE = "Crepe dulce";
+    private static final String CATEGORIA_SALADO = "Crepe salado";
+    private static final String CATEGORIA_BEBIDA = "Bebida";
+    private static final String CLAVE_DULCE = "crepe dulce";
+    private static final String CLAVE_SALADO = "crepe salado";
+    private static final String CLAVE_BEBIDA = "bebida";
     private final JTabbedPane tabs = new JTabbedPane();
-    private final ProductosController controller = new ProductosController();
+    private final transient ProductosController controller = new ProductosController();
 
     public ProductosPanel() {
         setLayout(new BorderLayout(10, 10));
@@ -86,7 +92,7 @@ public class ProductosPanel extends JPanel {
         JScrollPane scroll = new JScrollPane(grilla);
         scroll.setBorder(BorderFactory.createEmptyBorder());
         scroll.getViewport().setBackground(Estilos.FONDO);
-        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.getVerticalScrollBar().setUnitIncrement(16);
         return scroll;
     }

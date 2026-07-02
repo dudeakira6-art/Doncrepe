@@ -34,16 +34,17 @@ import modelo.Usuario;
 import vista.componentes.Recursos;
 
 public class LoginFrame extends JFrame {
+    private static final String FUENTE = "Segoe UI";
     private final PromptTextField txtUsuario = new PromptTextField("Usuario");
     private final PromptPasswordField txtPassword = new PromptPasswordField("Contraseña");
-    private final LoginController controller = new LoginController();
+    private final transient LoginController controller = new LoginController();
     private final JButton btnVerPassword = new JButton();
     private char echoPassword;
     private boolean passwordVisible;
 
     public LoginFrame() {
         setTitle("Don Crepé - Login");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setSize(1080, 640);
         setMinimumSize(new Dimension(980, 580));
         setLocationRelativeTo(null);
@@ -75,7 +76,7 @@ public class LoginFrame extends JFrame {
         JLabel bienvenido = new JLabel("¡BIENVENIDO!");
         bienvenido.setHorizontalAlignment(SwingConstants.CENTER);
         bienvenido.setForeground(Color.BLACK);
-        bienvenido.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        bienvenido.setFont(new Font(FUENTE, Font.BOLD, 24));
         gbc.gridy = 0;
         gbc.insets = new Insets(0, 0, 42, 0);
         formulario.add(bienvenido, gbc);
@@ -83,12 +84,12 @@ public class LoginFrame extends JFrame {
         JLabel titulo = new JLabel("INICIAR SESIÓN");
         titulo.setHorizontalAlignment(SwingConstants.LEFT);
         titulo.setForeground(Color.BLACK);
-        titulo.setFont(new Font("Segoe UI", Font.PLAIN, 24));
+        titulo.setFont(new Font(FUENTE, Font.PLAIN, 24));
         gbc.gridy = 1;
         gbc.insets = new Insets(0, 0, 36, 0);
         formulario.add(titulo, gbc);
 
-        txtUsuario.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+        txtUsuario.setFont(new Font(FUENTE, Font.PLAIN, 18));
         CampoLogin campoUsuario = new CampoLogin(txtUsuario, Recursos.icono("icon_userpink.png", 34), null);
         campoUsuario.setPreferredSize(new Dimension(520, 68));
         campoUsuario.setMinimumSize(new Dimension(420, 68));
@@ -96,7 +97,7 @@ public class LoginFrame extends JFrame {
         gbc.insets = new Insets(0, 0, 48, 0);
         formulario.add(campoUsuario, gbc);
 
-        txtPassword.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+        txtPassword.setFont(new Font(FUENTE, Font.PLAIN, 18));
         echoPassword = txtPassword.getEchoChar();
         configurarBotonPassword();
         CampoLogin campoPassword = new CampoLogin(txtPassword, null, btnVerPassword);
@@ -131,7 +132,7 @@ public class LoginFrame extends JFrame {
         JButton boton = new JButton(icono);
         boton.setText(icono == null ? "INGRESAR" : "");
         boton.setForeground(Estilos.ROSA_FUERTE);
-        boton.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        boton.setFont(new Font(FUENTE, Font.BOLD, 20));
         Dimension tamano = icono == null
                 ? new Dimension(170, 76)
                 : new Dimension(icono.getIconWidth() + 20, icono.getIconHeight() + 16);

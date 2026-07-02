@@ -21,8 +21,14 @@ import javax.swing.SwingConstants;
 import vista.Estilos;
 
 public class MenuLateral extends JPanel {
+    private static final String MENU_INICIO = "Inicio";
+    private static final String MENU_MESA = "Mesa";
+    private static final String MENU_PEDIDO = "Pedido";
+    private static final String MENU_PRODUCTO = "Producto";
+    private static final String MENU_HISTORIAL = "Historial Caja";
+    private static final String MENU_CERRAR = "Cerrar Sesion";
     private final Map<String, JButton> botones = new LinkedHashMap<String, JButton>();
-    private String activo = "Inicio";
+    private String activo = MENU_INICIO;
 
     public MenuLateral() {
         setLayout(new BorderLayout());
@@ -40,23 +46,23 @@ public class MenuLateral extends JPanel {
         JPanel centro = new JPanel(new GridLayout(5, 1, 0, 8));
         centro.setOpaque(false);
         centro.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
-        agregarBoton(centro, "Inicio", NeonIcon.HOME);
-        agregarBoton(centro, "Mesa", NeonIcon.TABLE);
-        agregarBoton(centro, "Pedido", NeonIcon.ORDER);
-        agregarBoton(centro, "Producto", NeonIcon.PRODUCT);
-        agregarBoton(centro, "Historial Caja", NeonIcon.CASH);
+        agregarBoton(centro, MENU_INICIO, NeonIcon.HOME);
+        agregarBoton(centro, MENU_MESA, NeonIcon.TABLE);
+        agregarBoton(centro, MENU_PEDIDO, NeonIcon.ORDER);
+        agregarBoton(centro, MENU_PRODUCTO, NeonIcon.PRODUCT);
+        agregarBoton(centro, MENU_HISTORIAL, NeonIcon.CASH);
         add(centro, BorderLayout.CENTER);
 
-        JButton cerrar = crearBoton("Cerrar Sesion", NeonIcon.LOGOUT);
-        cerrar.setActionCommand("Cerrar Sesion");
-        botones.put("Cerrar Sesion", cerrar);
+        JButton cerrar = crearBoton(MENU_CERRAR, NeonIcon.LOGOUT);
+        cerrar.setActionCommand(MENU_CERRAR);
+        botones.put(MENU_CERRAR, cerrar);
         JPanel sur = new JPanel(new BorderLayout());
         sur.setOpaque(false);
         sur.setBorder(BorderFactory.createEmptyBorder(10, 12, 18, 12));
         sur.add(cerrar, BorderLayout.CENTER);
         add(sur, BorderLayout.SOUTH);
 
-        marcarActivo("Inicio");
+        marcarActivo(MENU_INICIO);
     }
 
     private void agregarBoton(JPanel panel, String texto, String icono) {
@@ -167,19 +173,19 @@ public class MenuLateral extends JPanel {
     }
 
     private String iconoPorNombre(String nombre) {
-        if ("Inicio".equals(nombre)) {
+        if (MENU_INICIO.equals(nombre)) {
             return NeonIcon.HOME;
         }
-        if ("Mesa".equals(nombre)) {
+        if (MENU_MESA.equals(nombre)) {
             return NeonIcon.TABLE;
         }
-        if ("Pedido".equals(nombre)) {
+        if (MENU_PEDIDO.equals(nombre)) {
             return NeonIcon.ORDER;
         }
-        if ("Producto".equals(nombre)) {
+        if (MENU_PRODUCTO.equals(nombre)) {
             return NeonIcon.PRODUCT;
         }
-        if ("Historial Caja".equals(nombre)) {
+        if (MENU_HISTORIAL.equals(nombre)) {
             return NeonIcon.CASH;
         }
         return NeonIcon.LOGOUT;
